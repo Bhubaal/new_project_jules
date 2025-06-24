@@ -57,7 +57,8 @@ const cardStyle = {
 
 const JinzaiDashboard: React.FC = () => {
   return (
-    <Box p={3}>
+    // <Box p={3}> // Temporarily remove padding to test layout
+    <Box>
       <Grid container spacing={3}>
         {/* My Basic Info Card */}
         <Grid item xs={12} md={6}>

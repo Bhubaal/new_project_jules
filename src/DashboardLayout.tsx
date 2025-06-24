@@ -19,6 +19,7 @@ import { ColorModeContext } from './theme'; // Keep this for theme toggle
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import CssBaseline from '@mui/material/CssBaseline';
+import Container from '@mui/material/Container'; // Added for content wrapping
 import Avatar from '@mui/material/Avatar'; // Added for logo
 import Badge from '@mui/material/Badge'; // Added for notification badge
 
@@ -72,17 +73,31 @@ interface AppBarProps extends MuiAppBarProps {
 const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== 'open',
 })<AppBarProps>(({ theme, open }) => ({
-  zIndex: theme.zIndex.drawer + 1,
+  zIndex: theme.zIndex.drawer + 1, // Correct
   transition: theme.transitions.create(['width', 'margin'], {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
+  // Apply margin and width adjustments regardless of the 'open' state for permanent drawer
+  marginLeft: `${drawerWidth}px`,
+  width: `calc(100% - ${drawerWidth}px)`,
   ...(open && {
-    marginLeft: drawerWidth,
-    width: `calc(100% - ${drawerWidth}px)`,
+    // These transitions will apply when the drawer opens/closes
     transition: theme.transitions.create(['width', 'margin'], {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
+    }),
+  }),
+  ...(!open && { // When drawer is closed, AppBar should expand
+    marginLeft: `calc(${theme.spacing(7)} + 1px)`, // Match closed drawer width
+    width: `calc(100% - (${theme.spacing(7)} + 1px))`,
+    [theme.breakpoints.up('sm')]: {
+      marginLeft: `calc(${theme.spacing(8)} + 1px)`, // Match closed drawer width on sm screens
+      width: `calc(100% - (${theme.spacing(8)} + 1px))`,
+    },
+    transition: theme.transitions.create(['width', 'margin'], {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen, // Use leavingScreen for consistency
     }),
   }),
 }));
@@ -137,7 +152,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   ];
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex', width: '100%' }}> {/* Ensure root Box takes full available width, constrained by viewport */}
       <CssBaseline /> {/* Added CssBaseline */}
       <AppBar position="sticky" open={open} color="default" elevation={1}> {/* Changed position and color, added elevation */}
         <Toolbar>
@@ -220,10 +235,36 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           ))}
         </List>
       </Drawer>
-      {/* Main content area - AppBar is sticky, so content will scroll under it. No DrawerHeader needed here if AppBar is sticky. */}
-      <Box component="main" sx={{ flexGrow: 1, p: 3, paddingTop: '0px' /* Ajust if sticky AppBar creates unwanted space */ }}>
-        {/* <DrawerHeader /> We might not need this offset if AppBar is sticky and not fixed */}
-        {children}
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          bgcolor: 'background.default',
+          minHeight: '100vh',
+          transition: theme.transitions.create('margin', {
+            easing: theme.transitions.easing.sharp,
+            duration: open ? theme.transitions.duration.enteringScreen : theme.transitions.duration.leavingScreen,
+          }),
+          // Adjust marginLeft based on the drawer's open state
+          marginLeft: open ? `${drawerWidth}px` : `calc(${theme.spacing(7)} + 1px)`,
+          [theme.breakpoints.up('sm')]: {
+            marginLeft: open ? `${drawerWidth}px` : `calc(${theme.spacing(8)} + 1px)`,
+          },
+          // AppBar is sticky, so add padding top to this Box to avoid content overlap
+          // Use theme.mixins.toolbar.minHeight if available, otherwise fallback to a common value like 64px.
+          pt: typeof theme.mixins.toolbar.minHeight === 'number'
+              ? `calc(${theme.mixins.toolbar.minHeight}px + ${theme.spacing(3)})`
+              : `calc(64px + ${theme.spacing(3)})`,
+          pb: theme.spacing(3), // Padding at the bottom
+          // The Container below will manage its own horizontal spacing based on maxWidth,
+          // but we can add outer horizontal padding to the Box if needed.
+          // For now, let's rely on the Container.
+        }}
+      >
+        {/* No DrawerHeader needed here as AppBar is sticky and pt is handled above */}
+        <Container maxWidth="lg" sx={{ py: 3 }}>
+          {children}
+        </Container>
       </Box>
     </Box>
   );
