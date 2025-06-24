@@ -1,8 +1,8 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
+import React from 'react';
 import Dashboard from './Dashboard';
 import Login from './Login'; // Import the Login component
 import './App.css';
-import { Container, Typography } from '@mui/material';
+import DashboardLayout from './DashboardLayout';
 
 // Basic ProtectedRoute component
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
@@ -15,24 +15,10 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 
 function App() {
   return (
-    <>
-      <Typography variant="h3" component="h1" gutterBottom style={{ textAlign: 'center', margin: '20px 0' }}>
-        Leave-O-Meter
-      </Typography>
-      <Container>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </Container>
-    </>
+    <DashboardLayout title="Leave-O-Meter">
+      <Dashboard />
+    </DashboardLayout>
+
   );
 }
 
