@@ -54,11 +54,11 @@ export const getDesignTokens = (mode: PaletteMode) => ({
     MuiButton: {
       defaultProps: {
         disableElevation: true,
-        variant: 'contained',
+        variant: 'contained' as const, // Ensure it's treated as a literal type
       },
       styleOverrides: {
         root: {
-          textTransform: 'none', // No uppercase buttons
+          textTransform: 'none' as const, // No uppercase buttons
           borderRadius: '8px',
         },
       },

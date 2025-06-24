@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Suspense, useCallback } from 'react';
-import { Grid, Typography, CircularProgress, Box, Paper } from '@mui/material';
+import { Grid, Typography, CircularProgress, Paper } from '@mui/material'; // Removed Box
 import MetricCard from './MetricCard';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import EventBusyIcon from '@mui/icons-material/EventBusy';
@@ -24,7 +24,7 @@ const mockData: LeaveData = {
 };
 
 const Dashboard: React.FC = () => {
-  const [leaveData, setLeaveData] = useState<LeaveData>(mockData);
+  const [leaveData, _setLeaveData] = useState<LeaveData>(mockData); // Prefixed setLeaveData
   const [remainingLeave, setRemainingLeave] = useState<number>(0);
   const [metricCardsLoading, setMetricCardsLoading] = useState<boolean>(true);
   const [filters, setFilters] = useState<any>({});
@@ -55,7 +55,7 @@ const Dashboard: React.FC = () => {
       <FilterToolbar onFiltersChange={handleFilterChange} />
 
       <Grid container spacing={3} sx={{ mt: 0, mb: 3 }}> {/* Adjusted mt for tighter spacing with toolbar */}
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <MetricCard
             title="Total Allotted Leave"
             value={`${leaveData.totalAllottedLeave} days`}
@@ -64,7 +64,7 @@ const Dashboard: React.FC = () => {
             loading={metricCardsLoading}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <MetricCard
             title="Used Leave Days"
             value={`${leaveData.usedLeave} days`}
@@ -73,7 +73,7 @@ const Dashboard: React.FC = () => {
             loading={metricCardsLoading}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <MetricCard
             title="Remaining Leave"
             value={`${remainingLeave} days`}
@@ -82,7 +82,7 @@ const Dashboard: React.FC = () => {
             loading={metricCardsLoading}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <MetricCard
             title="Used WFH Days"
             value={`${leaveData.usedWFH} days`}

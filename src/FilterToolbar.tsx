@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react'; // Removed useCallback
 import { Box, TextField, Paper, Grid, Select, MenuItem, InputLabel, FormControl, OutlinedInput, Checkbox, ListItemText, Chip } from '@mui/material';
 import { LocalizationProvider, DateRangePicker, DateRange } from '@mui/x-date-pickers-pro';
-import { AdapterDateFns } from '@mui/x-date-pickers-pro/AdapterDateFnsV3';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'; // Trying generic AdapterDateFns from non-pro
 import { SelectChangeEvent } from '@mui/material/Select';
 
 // --- Debounce Hook ---
@@ -93,13 +93,13 @@ const FilterToolbar: React.FC<FilterToolbarProps> = ({ onFiltersChange }) => {
     <Paper sx={{ p: 2, mb: 3 }}>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <DateRangePicker
               value={dateRange}
               onChange={handleDateRangeChange}
             />
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <FormControl fullWidth>
               <InputLabel id="user-multi-select-label">Users</InputLabel>
               <Select
@@ -127,7 +127,7 @@ const FilterToolbar: React.FC<FilterToolbarProps> = ({ onFiltersChange }) => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <TextField
               fullWidth
               label="Search"
