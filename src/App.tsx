@@ -1,4 +1,4 @@
-import Dashboard from './Dashboard';
+import JinzaiDashboard from './JinzaiDashboard'; // Changed to import JinzaiDashboard
 // import Login from './Login'; // Import the Login component - Unused for now
 import './App.css';
 import DashboardLayout from './DashboardLayout';
@@ -37,9 +37,10 @@ function App() {
   // );
 
   // Current simplified setup:
+  // The `title` prop for DashboardLayout is removed as the title is now set within DashboardLayout's AppBar.
   return (
-    <DashboardLayout title="Leave-O-Meter">
-      <Dashboard />
+    <DashboardLayout>
+      <JinzaiDashboard />
     </DashboardLayout>
   );
 }
