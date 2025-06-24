@@ -27,8 +27,8 @@ export const getDesignTokens = (mode: PaletteMode) => ({
             secondary: jinzaiBrandColors.neutral[700], // Adjusted for better contrast
           },
           background: {
-            default: '#ffffff',
-            paper: jinzaiBrandColors.neutral[50],
+            default: '#f4f6f8', // Changed to light grey
+            paper: jinzaiBrandColors.neutral[50], // Paper can remain lighter or also be adjusted
           }
         }
       : {
