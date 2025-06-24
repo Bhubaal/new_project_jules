@@ -11,15 +11,27 @@ import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import ListItem from '@mui/material/ListItem';
+// Removed unused ListItem import
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import InboxIcon from '@mui/icons-material/MoveToInbox';
-import MailIcon from '@mui/icons-material/Mail';
-import { ColorModeContext } from './theme';
+import { ColorModeContext } from './theme'; // Keep this for theme toggle
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
+import CssBaseline from '@mui/material/CssBaseline';
+import Avatar from '@mui/material/Avatar'; // Added for logo
+import Badge from '@mui/material/Badge'; // Added for notification badge
+
+// MUI Icons for Sidebar and App Bar
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import ForumIcon from '@mui/icons-material/Forum';
+import BeachAccessIcon from '@mui/icons-material/BeachAccess';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import HomeWorkIcon from '@mui/icons-material/HomeWork';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 const drawerWidth = 240;
 
@@ -94,13 +106,14 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 
 interface DashboardLayoutProps {
   children: ReactNode;
-  title?: string; // Optional title for the header
+  // title prop is no longer needed as it's hardcoded in AppBar
 }
 
-const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = "Dashboard" }) => {
+const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const theme = useTheme();
   const colorMode = React.useContext(ColorModeContext);
   const [open, setOpen] = useState(true); // Drawer is open by default
+  const [selectedItem, setSelectedItem] = useState('Dashboard'); // State for selected item
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -110,9 +123,23 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = "Da
     setOpen(false);
   };
 
+  const handleListItemClick = (text: string) => {
+    setSelectedItem(text);
+    // Add navigation logic here if needed in the future
+  };
+
+  const menuItems = [
+    { text: 'Dashboard', icon: <DashboardIcon /> },
+    { text: 'IV Forum', icon: <ForumIcon /> },
+    { text: 'Leave', icon: <BeachAccessIcon /> },
+    { text: 'Attendance', icon: <CalendarTodayIcon /> },
+    { text: 'Work From Home', icon: <HomeWorkIcon /> },
+  ];
+
   return (
     <Box sx={{ display: 'flex' }}>
-      <AppBar position="fixed" open={open}>
+      <CssBaseline /> {/* Added CssBaseline */}
+      <AppBar position="sticky" open={open} color="default" elevation={1}> {/* Changed position and color, added elevation */}
         <Toolbar>
           <IconButton
             color="inherit"
@@ -120,56 +147,82 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title = "Da
             onClick={handleDrawerOpen}
             edge="start"
             sx={{
-              marginRight: 5,
+              marginRight: 5, // Keep margin for consistency
               ...(open && { display: 'none' }),
             }}
           >
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            {title}
+            Jinzai Works
           </Typography>
+          <IconButton color="inherit">
+            <Badge badgeContent="99+" color="error">
+              <NotificationsIcon />
+            </Badge>
+          </IconButton>
+          <IconButton color="inherit">
+            <RefreshIcon />
+          </IconButton>
+          <IconButton color="inherit">
+            <HelpOutlineIcon />
+          </IconButton>
+          <IconButton color="inherit">
+            <AccountCircleIcon />
+          </IconButton>
           <IconButton sx={{ ml: 1 }} onClick={colorMode.toggleColorMode} color="inherit">
             {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
           </IconButton>
         </Toolbar>
       </AppBar>
       <Drawer variant="permanent" open={open}>
-        <DrawerHeader>
+        <DrawerHeader sx={{ display: 'flex', alignItems: 'center', justifyContent: open ? 'space-between' : 'flex-end', px: open ? 2 : 1 }}>
+          {open && (
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Avatar sx={{ mr: 1, bgcolor: 'primary.main' }}>J</Avatar> {/* Placeholder Logo */}
+              <Typography variant="h6" component="div">Jinzai</Typography>
+            </Box>
+          )}
           <IconButton onClick={handleDrawerClose}>
             {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
           </IconButton>
         </DrawerHeader>
         <Divider />
         <List>
-          {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
-            <ListItem key={text} disablePadding sx={{ display: 'block' }}>
-              <ListItemButton
+          {menuItems.map((item) => (
+            <ListItemButton
+              key={item.text}
+              selected={selectedItem === item.text}
+              onClick={() => handleListItemClick(item.text)}
+              sx={{
+                minHeight: 48,
+                justifyContent: open ? 'initial' : 'center',
+                px: 2.5,
+                '&.Mui-selected': {
+                    backgroundColor: theme.palette.action.selected, // Use theme's selected color
+                    '&:hover': {
+                        backgroundColor: theme.palette.action.hover, // Use theme's hover color
+                    }
+                }
+              }}
+            >
+              <ListItemIcon
                 sx={{
-                  minHeight: 48,
-                  justifyContent: open ? 'initial' : 'center',
-                  px: 2.5,
+                  minWidth: 0,
+                  mr: open ? 3 : 'auto',
+                  justifyContent: 'center',
                 }}
               >
-                <ListItemIcon
-                  sx={{
-                    minWidth: 0,
-                    mr: open ? 3 : 'auto',
-                    justifyContent: 'center',
-                  }}
-                >
-                  {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-                </ListItemIcon>
-                <ListItemText primary={text} sx={{ opacity: open ? 1 : 0 }} />
-              </ListItemButton>
-            </ListItem>
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText primary={item.text} sx={{ opacity: open ? 1 : 0 }} />
+            </ListItemButton>
           ))}
         </List>
-        <Divider />
-        {/* Add more list items or sections here */}
       </Drawer>
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-        <DrawerHeader /> {/* This is to offset content below Appbar */}
+      {/* Main content area - AppBar is sticky, so content will scroll under it. No DrawerHeader needed here if AppBar is sticky. */}
+      <Box component="main" sx={{ flexGrow: 1, p: 3, paddingTop: '0px' /* Ajust if sticky AppBar creates unwanted space */ }}>
+        {/* <DrawerHeader /> We might not need this offset if AppBar is sticky and not fixed */}
         {children}
       </Box>
     </Box>

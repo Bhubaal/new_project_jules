@@ -1,42 +1,46 @@
 import { PaletteMode, createTheme } from '@mui/material';
-import { amber, deepOrange, grey } from '@mui/material/colors';
+import { grey } from '@mui/material/colors'; // Removed amber and deepOrange
 import React from 'react';
 
-// Define placeholder brand tokens
-const placeholderBrandColors = {
-  primary: amber, // Example primary color
-  secondary: deepOrange, // Example secondary color
-  neutral: grey, // Example neutral color
+// Define Jinzai brand tokens
+const jinzaiBrandColors = {
+  primary: '#0D47A1',
+  secondary: '#1976D2',
+  neutral: grey,
 };
 
 export const getDesignTokens = (mode: PaletteMode) => ({
   palette: {
     mode,
+    primary: {
+      main: jinzaiBrandColors.primary,
+    },
+    secondary: {
+      main: jinzaiBrandColors.secondary,
+    },
     ...(mode === 'light'
       ? {
           // Palette values for light mode
-          primary: placeholderBrandColors.primary,
-          divider: placeholderBrandColors.primary[200],
+          divider: jinzaiBrandColors.neutral[300], // Adjusted divider for better visibility
           text: {
-            primary: placeholderBrandColors.neutral[900],
-            secondary: placeholderBrandColors.neutral[800],
+            primary: jinzaiBrandColors.neutral[900],
+            secondary: jinzaiBrandColors.neutral[700], // Adjusted for better contrast
           },
           background: {
             default: '#ffffff',
-            paper: placeholderBrandColors.neutral[50],
+            paper: jinzaiBrandColors.neutral[50],
           }
         }
       : {
           // Palette values for dark mode
-          primary: placeholderBrandColors.secondary,
-          divider: placeholderBrandColors.neutral[700],
+          divider: jinzaiBrandColors.neutral[700],
           background: {
-            default: placeholderBrandColors.neutral[900],
-            paper: placeholderBrandColors.neutral[800],
+            default: jinzaiBrandColors.neutral[900],
+            paper: jinzaiBrandColors.neutral[800],
           },
           text: {
             primary: '#fff',
-            secondary: placeholderBrandColors.neutral[500],
+            secondary: jinzaiBrandColors.neutral[400], // Adjusted for better visibility
           },
         }),
   },
