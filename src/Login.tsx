@@ -18,7 +18,7 @@ const LoginSchema = Yup.object().shape({
 const Login = () => {
   const navigate = useNavigate();
 
-  const handleSubmit = (values: LoginValues, { setSubmitting }: FormikHelpers<LoginValues>) => {
+  const handleSubmit = (_values: LoginValues, { setSubmitting }: FormikHelpers<LoginValues>) => { // Prefixed values
     // Simulate API call
     setTimeout(() => {
       setSubmitting(false);
@@ -50,7 +50,7 @@ const Login = () => {
           validationSchema={LoginSchema}
           onSubmit={handleSubmit}
         >
-          {({ isSubmitting }) => (
+          {({ isSubmitting }: { isSubmitting: boolean }) => ( // Explicitly type isSubmitting
             <Form>
               <Field
                 as={TextField}
@@ -85,13 +85,13 @@ const Login = () => {
               >
                 Sign In
               </Button>
-              <Grid container>
-                <Grid item xs>
+              <Grid container justifyContent="space-between"> {/* Added justifyContent */}
+                <Grid size="grow"> {/* Takes available space */}
                   <Link href="#" variant="body2">
                     Forgot password?
                   </Link>
                 </Grid>
-                <Grid item>
+                <Grid> {/* Takes content width */}
                   <Link href="#" variant="body2">
                     {"Don't have an account? Sign Up"}
                   </Link>

@@ -36,7 +36,12 @@ const MetricCard: React.FC<MetricCardProps> = ({ title, value, icon, color, load
               {icon && isValidElement(icon) && (
                 <Box component="span" sx={{ mr: 1.5, color: resolvedColor, display: 'flex', alignItems: 'center' }}>
                   {/* Clone the icon to apply styles, ensuring it's a valid element */}
-                  {React.cloneElement(icon, { sx: { fontSize: '2rem', ...icon.props.sx } })}
+                  {React.cloneElement(icon as React.ReactElement<any>, {
+                    sx: {
+                      fontSize: '2rem',
+                      ...( (icon as React.ReactElement<any>).props?.sx || {} )
+                    }
+                  })}
                 </Box>
               )}
               <Typography

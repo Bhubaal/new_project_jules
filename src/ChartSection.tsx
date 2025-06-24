@@ -74,7 +74,7 @@ const ChartSection: React.FC = () => {
     <>
       <Grid container spacing={3}>
         {/* Bar Chart - Monthly Usage */}
-        <Grid item xs={12} md={6} lg={4}>
+        <Grid size={{ xs: 12, md: 6, lg: 4 }}>
           <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: 300 }}>
             <Typography variant="h6" gutterBottom>
               Monthly Usage (Leave vs WFH)
@@ -94,7 +94,7 @@ const ChartSection: React.FC = () => {
         </Grid>
 
         {/* Line Chart - Trend (Example: Leave Taken Over Time) */}
-        <Grid item xs={12} md={6} lg={4}>
+        <Grid size={{ xs: 12, md: 6, lg: 4 }}>
           <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: 300 }}>
             <Typography variant="h6" gutterBottom>
               Leave Trend
@@ -113,7 +113,7 @@ const ChartSection: React.FC = () => {
         </Grid>
 
         {/* Pie Chart - Leave Types Distribution */}
-        <Grid item xs={12} md={6} lg={4}>
+        <Grid size={{ xs: 12, md: 6, lg: 4 }}>
           <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: 300 }}>
             <Typography variant="h6" gutterBottom>
               Leave Types Distribution
@@ -129,10 +129,10 @@ const ChartSection: React.FC = () => {
                   fill="#8884d8"
                   dataKey="value"
                   nameKey="name"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }) => `${name} ${percent !== undefined ? (percent * 100).toFixed(0) : 'N/A'}%`}
                   onClick={handlePieClick}
                 >
-                  {leaveTypeData.map((entry, index) => (
+                  {leaveTypeData.map((_entry, index) => ( // Prefixed entry with _ as it's not used
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
