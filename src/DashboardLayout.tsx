@@ -152,7 +152,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   ];
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex', width: '100%' }}> {/* Ensure root Box takes full available width, constrained by viewport */}
       <CssBaseline /> {/* Added CssBaseline */}
       <AppBar position="sticky" open={open} color="default" elevation={1}> {/* Changed position and color, added elevation */}
         <Toolbar>
