@@ -7,7 +7,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 // Import the new page components
 import IVForumPage from '../pages/iv-forum';
 import WorkFromHomePage from '../pages/work-from-home';
-import LeavePage from '../pages/leave';
+// import LeavePage from '../pages/leave'; // Old leave page
+import LeavesPage from '../pages/LeavesPage'; // New leaves page
 import AttendancePage from '../pages/attendance';
 
 // Basic ProtectedRoute component
@@ -50,10 +51,17 @@ function App() {
             </DashboardLayout>
           </ProtectedRoute>
         } />
-        <Route path="/leave" element={
+        {/* <Route path="/leave" element={
           <ProtectedRoute>
             <DashboardLayout>
               <LeavePage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } /> */}
+        <Route path="/leaves" element={ // New route for LeavesPage
+          <ProtectedRoute>
+            <DashboardLayout>
+              <LeavesPage />
             </DashboardLayout>
           </ProtectedRoute>
         } />
