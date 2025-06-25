@@ -21,38 +21,48 @@ export const getDesignTokens = (mode: PaletteMode) => ({
     ...(mode === 'light'
       ? {
           // Palette values for light mode
-          divider: jinzaiBrandColors.neutral[300], // Adjusted divider for better visibility
+          primary: {
+            main: '#6200EE', // Primary
+          },
+          secondary: {
+            main: '#018786', // Secondary
+          },
+          error: {
+            main: '#B00020', // Error
+          },
+          divider: '#E0E0E0', // Divider/Border
           text: {
-            primary: jinzaiBrandColors.neutral[900],
-            secondary: jinzaiBrandColors.neutral[700], // Adjusted for better contrast
+            primary: '#1F1F1F', // Text Primary
+            secondary: '#5F5F5F', // Text Secondary
           },
           background: {
-            default: '#f4f6f8', // Changed to light grey
-            paper: jinzaiBrandColors.neutral[50], // Paper can remain lighter or also be adjusted
+            default: '#FFFFFF', // Background
+            paper: '#F5F5F5', // Surface
           }
         }
       : {
           // Palette values for dark mode
           primary: {
-            main: '#BB86FC', // Neon Orchid
+            main: '#BB86FC', // Primary
+            variant: '#3700B3', // Primary Variant
           },
           secondary: {
-            main: '#03DAC6', // Aqua Pulse
+            main: '#03DAC6', // Secondary
           },
           error: {
-            main: '#CF6679', // Crimson Signal
+            main: '#CF6679', // Error
           },
           success: {
-            main: '#4CAF50', // Verdant Success
+            main: '#4CAF50', // Verdant Success (keeping existing success color)
           },
-          divider: jinzaiBrandColors.neutral[700], // Keeping this for now, can be adjusted
+          divider: '#2C2C2C', // Divider/Border
           background: {
-            default: '#1E1E1E', // Graphite Surface
-            paper: '#1E1E1E', // Graphite Surface for cards/panels
+            default: '#121212', // Background
+            paper: '#1E1E1E', // Surface
           },
           text: {
-            primary: '#E0E0E0', // High-Beam Text
-            secondary: '#A3A3A3', // Dim Label
+            primary: '#E0E0E0', // Text Primary
+            secondary: '#A3A3A3', // Text Secondary
           },
         }),
   },
