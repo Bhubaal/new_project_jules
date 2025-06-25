@@ -244,9 +244,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             easing: theme.transitions.easing.sharp,
             duration: open ? theme.transitions.duration.enteringScreen : theme.transitions.duration.leavingScreen,
           }),
-          marginLeft: open ? `${drawerWidth}px` : 0,
+          marginLeft: open ? `${drawerWidth}px` : `calc(${theme.spacing(7)} + 1px)`,
           [theme.breakpoints.up('sm')]: {
-            marginLeft: open ? `${drawerWidth}px` : 0,
+            marginLeft: open ? `${drawerWidth}px` : `calc(${theme.spacing(8)} + 1px)`,
           },
           pt: typeof theme.mixins.toolbar.minHeight === 'number'
               ? `calc(${theme.mixins.toolbar.minHeight}px + ${theme.spacing(3)})`
