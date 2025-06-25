@@ -132,12 +132,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [open, setOpen] = useState(true); // Drawer is open by default
   const [selectedItem, setSelectedItem] = useState('Dashboard'); // State for selected item
 
-  const handleDrawerOpen = () => {
-    setOpen(true);
-  };
-
-  const handleDrawerClose = () => {
-    setOpen(false);
+  const handleDrawerToggle = () => {
+    setOpen(!open);
   };
 
   // Define menu items with paths
@@ -161,15 +157,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         <Toolbar>
           <IconButton
             color="inherit"
-            aria-label="open drawer"
-            onClick={handleDrawerOpen}
+            aria-label="toggle drawer"
+            onClick={handleDrawerToggle}
             edge="start"
             sx={{
               marginRight: 5,
-              ...(open && { display: 'none' }),
             }}
           >
-            <MenuIcon />
+            {open ? <ChevronLeftIcon /> : <MenuIcon />}
           </IconButton>
           <Avatar 
             src="/logo192.png" 
@@ -200,9 +195,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       </AppBar>
       <Drawer variant="permanent" open={open}>
         <DrawerHeader>
-          <IconButton onClick={handleDrawerClose}>
-            {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-          </IconButton>
+          {/* IconButton removed as per requirement */}
         </DrawerHeader>
         <Divider />
         <List>
