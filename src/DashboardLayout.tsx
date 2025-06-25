@@ -15,6 +15,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import { useNavigate } from 'react-router-dom'; // Added for navigation
 import { ColorModeContext } from './theme'; // Keep this for theme toggle
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
@@ -127,6 +128,7 @@ interface DashboardLayoutProps {
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const theme = useTheme();
   const colorMode = React.useContext(ColorModeContext);
+  const navigate = useNavigate(); // Added for navigation
   const [open, setOpen] = useState(true); // Drawer is open by default
   const [selectedItem, setSelectedItem] = useState('Dashboard'); // State for selected item
 
@@ -138,18 +140,19 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     setOpen(false);
   };
 
-  const handleListItemClick = (text: string) => {
-    setSelectedItem(text);
-    // Add navigation logic here if needed in the future
-  };
-
+  // Define menu items with paths
   const menuItems = [
-    { text: 'Dashboard', icon: <DashboardIcon /> },
-    { text: 'IV Forum', icon: <ForumIcon /> },
-    { text: 'Leave', icon: <BeachAccessIcon /> },
-    { text: 'Attendance', icon: <CalendarTodayIcon /> },
-    { text: 'Work From Home', icon: <HomeWorkIcon /> },
+    { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
+    { text: 'IV Forum', icon: <ForumIcon />, path: '/iv-forum' },
+    { text: 'Leave', icon: <BeachAccessIcon />, path: '/leave' },
+    { text: 'Attendance', icon: <CalendarTodayIcon />, path: '/attendance' },
+    { text: 'Work From Home', icon: <HomeWorkIcon />, path: '/work-from-home' },
   ];
+
+  const handleListItemClick = (text: string, path: string) => {
+    setSelectedItem(text);
+    navigate(path); // Navigate to the specified path
+  };
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -207,7 +210,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             <ListItemButton
               key={item.text}
               selected={selectedItem === item.text}
-              onClick={() => handleListItemClick(item.text)}
+              onClick={() => handleListItemClick(item.text, item.path)}
               sx={{
                 minHeight: 48,
                 justifyContent: open ? 'initial' : 'center',
