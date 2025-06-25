@@ -18,43 +18,45 @@ const MetricCard: React.FC<MetricCardProps> = ({ title, value, icon, color, load
   return (
     <Card sx={{
         height: '100%',
+        minHeight: 220, // Increased minimum height
         display: 'flex',
         flexDirection: 'column',
-        // Consider adding a subtle background tint based on 'color' prop if desired
-        // backgroundColor: color ? alpha(resolvedColor, 0.05) : undefined,
+        flex: 1,
+        maxWidth: 400, // Make card wider by default
+        margin: '0 auto', // Center card if possible
         }}>
-      <CardContent sx={{ flexGrow: 1 }}>
+      <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         {loading ? (
           <>
             <Skeleton variant="text" width="60%" sx={{ mb: 0.5 }} />
             <Skeleton variant="text" width="40%" sx={{ mb: 1.5 }} />
-            <Skeleton variant="rectangular" height={36} />
+            <Skeleton variant="rectangular" height={44} /> {/* Slightly taller skeleton */}
           </>
         ) : (
           <>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               {icon && isValidElement(icon) && (
-                <Box component="span" sx={{ mr: 1.5, color: resolvedColor, display: 'flex', alignItems: 'center' }}>
+                <Box component="span" sx={{ mr: 2, color: resolvedColor, display: 'flex', alignItems: 'center' }}>
                   {/* Clone the icon to apply styles, ensuring it's a valid element */}
                   {React.cloneElement(icon as React.ReactElement<any>, {
                     sx: {
-                      fontSize: '2rem',
+                      fontSize: '2.7rem', // Larger icon
                       ...( (icon as React.ReactElement<any>).props?.sx || {} )
                     }
                   })}
                 </Box>
               )}
               <Typography
-                variant="subtitle2" // Using subtitle2 for a slightly less prominent title
+                variant="h6" // Larger title
                 component="div"
                 color="text.secondary"
-                sx={{ textTransform: 'uppercase', fontWeight: 'medium', lineHeight: 1.4 }}
+                sx={{ textTransform: 'uppercase', fontWeight: 'bold', lineHeight: 1.4 }}
               >
                 {title}
               </Typography>
             </Box>
             <Typography
-              variant="h4"
+              variant="h3" // Larger value
               component="p"
               sx={{ fontWeight: 'bold', color: resolvedColor, lineHeight: 1.2 }}
             >

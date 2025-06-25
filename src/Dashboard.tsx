@@ -54,8 +54,8 @@ const Dashboard: React.FC = () => {
     <>
       <FilterToolbar onFiltersChange={handleFilterChange} />
 
-      <Grid container spacing={3} sx={{ mt: 0, mb: 3 }}> {/* Adjusted mt for tighter spacing with toolbar */}
-        <Grid item xs={12} sm={6} md={3}>
+      <Grid container spacing={3} sx={{ mt: 0, mb: 3, alignItems: 'stretch', minHeight: { xs: 200, md: 220 } }}> {/* Adjusted mt for tighter spacing with toolbar, alignItems for stretch */}
+        <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}> {/* Make each card item a flex container */}
           <MetricCard
             title="Total Allotted Leave"
             value={`${leaveData.totalAllottedLeave} days`}
@@ -64,7 +64,7 @@ const Dashboard: React.FC = () => {
             loading={metricCardsLoading}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
           <MetricCard
             title="Used Leave Days"
             value={`${leaveData.usedLeave} days`}
@@ -73,7 +73,7 @@ const Dashboard: React.FC = () => {
             loading={metricCardsLoading}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
           <MetricCard
             title="Remaining Leave"
             value={`${remainingLeave} days`}
@@ -82,7 +82,7 @@ const Dashboard: React.FC = () => {
             loading={metricCardsLoading}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={12} sm={6} md={3} sx={{ display: 'flex' }}>
           <MetricCard
             title="Used WFH Days"
             value={`${leaveData.usedWFH} days`}

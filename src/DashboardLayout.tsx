@@ -244,20 +244,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             easing: theme.transitions.easing.sharp,
             duration: open ? theme.transitions.duration.enteringScreen : theme.transitions.duration.leavingScreen,
           }),
-          // Adjust marginLeft based on the drawer's open state
-          marginLeft: open ? `${drawerWidth}px` : `calc(${theme.spacing(7)} + 1px)`,
+          marginLeft: open ? `${drawerWidth}px` : 0,
           [theme.breakpoints.up('sm')]: {
-            marginLeft: open ? `${drawerWidth}px` : `calc(${theme.spacing(8)} + 1px)`,
+            marginLeft: open ? `${drawerWidth}px` : 0,
           },
-          // AppBar is sticky, so add padding top to this Box to avoid content overlap
-          // Use theme.mixins.toolbar.minHeight if available, otherwise fallback to a common value like 64px.
           pt: typeof theme.mixins.toolbar.minHeight === 'number'
               ? `calc(${theme.mixins.toolbar.minHeight}px + ${theme.spacing(3)})`
               : `calc(64px + ${theme.spacing(3)})`,
-          pb: theme.spacing(3), // Padding at the bottom
-          // The Container below will manage its own horizontal spacing based on maxWidth,
-          // but we can add outer horizontal padding to the Box if needed.
-          // For now, let's rely on the Container.
+          pb: theme.spacing(3),
         }}
       >
         {/* No DrawerHeader needed here as AppBar is sticky and pt is handled above */}

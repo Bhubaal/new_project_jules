@@ -67,29 +67,29 @@ const JinzaiDashboard: React.FC = () => {
   return (
     // Root Box - no padding here, DashboardLayout's Container handles it
     <Box>
-      <Grid container spacing={3}>
+      <Grid container spacing={3} alignItems="stretch">
         {/* My Basic Info Card */}
-        <Grid item xs={12} md={6}>
-          <Card variant="outlined" sx={cardStyle}>
-            <CardHeader title="My Basic Info" />
+        <Grid item xs={12} md={8} sx={{ display: 'flex' }}>
+          <Card variant="outlined" sx={{ ...cardStyle, minHeight: 260, flex: 1 }}>
+            <CardHeader title={<Typography variant="h5" fontWeight="bold">My Basic Info</Typography>} />
             <CardContent sx={cardContentStyle}>
               <Box display="flex" alignItems="center" mb={2}>
-                <Avatar src={user.avatarUrl} sx={{ width: 56, height: 56 }}>
+                <Avatar src={user.avatarUrl} sx={{ width: 72, height: 72 }}>
                   {user.name.charAt(0)}
                 </Avatar>
-                <Box ml={2}>
-                  <Typography variant="h6">{user.name}</Typography>
-                  <Typography variant="body2" color="textSecondary">{user.email}</Typography>
+                <Box ml={3}>
+                  <Typography variant="h5" fontWeight="bold">{user.name}</Typography>
+                  <Typography variant="body1" color="textSecondary">{user.email}</Typography>
                 </Box>
               </Box>
               <List dense>
                 <ListItem>
                   <ListItemIcon><BadgeIcon /></ListItemIcon>
-                  <ListItemText primary="Emp ID" secondary={user.empId} />
+                  <ListItemText primary={<Typography variant="subtitle1">Emp ID</Typography>} secondary={<Typography variant="body1">{user.empId}</Typography>} />
                 </ListItem>
                 <ListItem>
                   <ListItemIcon><DomainIcon /></ListItemIcon>
-                  <ListItemText primary="Domain Name" secondary={user.domain} />
+                  <ListItemText primary={<Typography variant="subtitle1">Domain Name</Typography>} secondary={<Typography variant="body1">{user.domain}</Typography>} />
                 </ListItem>
               </List>
             </CardContent>
@@ -97,12 +97,12 @@ const JinzaiDashboard: React.FC = () => {
         </Grid>
 
         {/* My Current Project Info Card */}
-        <Grid item xs={12} md={6}>
-          <Card variant="outlined" sx={cardStyle}>
-            <CardHeader title="My Current Project Info" />
+        <Grid item xs={12} md={4} sx={{ display: 'flex' }}>
+          <Card variant="outlined" sx={{ ...cardStyle, minHeight: 260, flex: 1 }}>
+            <CardHeader title={<Typography variant="h6" fontWeight="bold">My Current Project Info</Typography>} />
             <CardContent sx={cardContentStyle}>
-              <Box sx={{ overflowX: 'auto' }}> {/* Key change: scrollable Box for table */}
-                <Table size="small" stickyHeader > {/* Added stickyHeader for better scroll experience */}
+              <Box sx={{ overflowX: 'auto' }}>
+                <Table size="medium" stickyHeader>
                   <TableBody>
                     {[
                       ['Project Name', project.name],
@@ -112,8 +112,8 @@ const JinzaiDashboard: React.FC = () => {
                       ['Location', project.location],
                     ].map(([label, value]) => (
                       <TableRow key={label}>
-                        <TableCell sx={{ fontWeight: 'medium', whiteSpace: 'nowrap' }}>{label}</TableCell> {/* Added whiteSpace for labels */}
-                        <TableCell>{value || '-'}</TableCell>
+                        <TableCell sx={{ fontWeight: 'medium', whiteSpace: 'nowrap', fontSize: '1.1rem' }}>{label}</TableCell>
+                        <TableCell sx={{ fontSize: '1.1rem' }}>{value || '-'}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -124,30 +124,30 @@ const JinzaiDashboard: React.FC = () => {
         </Grid>
 
         {/* My Leave Balance Card */}
-        <Grid item xs={12} md={6}>
-          <Card variant="outlined" sx={cardStyle}>
-            <CardHeader title="My Leave Balance" />
+        <Grid item xs={12} md={6} sx={{ display: 'flex' }}>
+          <Card variant="outlined" sx={{ ...cardStyle, minHeight: 240, flex: 1 }}>
+            <CardHeader title={<Typography variant="h6" fontWeight="bold">My Leave Balance</Typography>} />
             <CardContent sx={cardContentStyle}>
-              <Box sx={{ overflowX: 'auto' }}> {/* Key change: scrollable Box for table */}
-                <Table size="small" stickyHeader> {/* Added stickyHeader */}
+              <Box sx={{ overflowX: 'auto' }}>
+                <Table size="medium" stickyHeader>
                   <TableHead>
                     <TableRow>
-                      <TableCell sx={{whiteSpace: 'nowrap'}}>Leave Type</TableCell>
-                      <TableCell align="right">Balance</TableCell>
-                      <TableCell align="right">Allotted</TableCell>
+                      <TableCell sx={{whiteSpace: 'nowrap', fontSize: '1.1rem'}}>Leave Type</TableCell>
+                      <TableCell align="right" sx={{ fontSize: '1.1rem' }}>Balance</TableCell>
+                      <TableCell align="right" sx={{ fontSize: '1.1rem' }}>Allotted</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {leaveTypes.map(type => (
                       <TableRow key={type.key}>
-                        <TableCell>
+                        <TableCell sx={{ fontSize: '1.1rem' }}>
                           <Box component="span" mr={1} sx={{ verticalAlign: 'middle' }}>
-                            {type.icon.length > 2 ? <MuiIcon fontSize="small">{type.icon}</MuiIcon> : type.icon}
+                            {type.icon.length > 2 ? <MuiIcon fontSize="medium">{type.icon}</MuiIcon> : type.icon}
                           </Box>
                           {type.label}
                         </TableCell>
-                        <TableCell align="right">{type.balance}</TableCell>
-                        <TableCell align="right">{type.allotted}</TableCell>
+                        <TableCell align="right" sx={{ fontSize: '1.1rem' }}>{type.balance}</TableCell>
+                        <TableCell align="right" sx={{ fontSize: '1.1rem' }}>{type.allotted}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -158,30 +158,30 @@ const JinzaiDashboard: React.FC = () => {
         </Grid>
 
         {/* My WFH Balance Card */}
-        <Grid item xs={12} md={6}>
-          <Card variant="outlined" sx={cardStyle}>
-            <CardHeader title="My WFH Balance" />
+        <Grid item xs={12} md={6} sx={{ display: 'flex' }}>
+          <Card variant="outlined" sx={{ ...cardStyle, minHeight: 240, flex: 1 }}>
+            <CardHeader title={<Typography variant="h6" fontWeight="bold">My WFH Balance</Typography>} />
             <CardContent sx={cardContentStyle}>
-              <Box sx={{ overflowX: 'auto' }}> {/* Key change: scrollable Box for table */}
-                <Table size="small" stickyHeader> {/* Added stickyHeader */}
+              <Box sx={{ overflowX: 'auto' }}>
+                <Table size="medium" stickyHeader>
                   <TableHead>
                     <TableRow>
-                      <TableCell sx={{whiteSpace: 'nowrap'}}>WFH Type</TableCell>
-                      <TableCell align="right">Balance</TableCell>
-                      <TableCell align="right">Allotted</TableCell>
+                      <TableCell sx={{whiteSpace: 'nowrap', fontSize: '1.1rem'}}>WFH Type</TableCell>
+                      <TableCell align="right" sx={{ fontSize: '1.1rem' }}>Balance</TableCell>
+                      <TableCell align="right" sx={{ fontSize: '1.1rem' }}>Allotted</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {wfhTypes.map(type => (
                       <TableRow key={type.key}>
-                        <TableCell>
+                        <TableCell sx={{ fontSize: '1.1rem' }}>
                           <Box component="span" mr={1} sx={{ verticalAlign: 'middle' }}>
-                            {type.icon.length > 2 ? <MuiIcon fontSize="small">{type.icon}</MuiIcon> : type.icon}
+                            {type.icon.length > 2 ? <MuiIcon fontSize="medium">{type.icon}</MuiIcon> : type.icon}
                           </Box>
                           {type.label}
                         </TableCell>
-                        <TableCell align="right">{type.balance}</TableCell>
-                        <TableCell align="right">{type.allotted}</TableCell>
+                        <TableCell align="right" sx={{ fontSize: '1.1rem' }}>{type.balance}</TableCell>
+                        <TableCell align="right" sx={{ fontSize: '1.1rem' }}>{type.allotted}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
