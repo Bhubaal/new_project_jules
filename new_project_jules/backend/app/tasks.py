@@ -1,6 +1,2 @@
-from app.core.celery_app import celery_app
-
-
-@celery_app.task(acks_late=True)
-def example_task(word: str) -> str:
-    return f"test task returns {word}"
+# This file is intentionally left empty after removing Celery tasks.
+# It can be deleted if no other background tasks are planned for the future.
