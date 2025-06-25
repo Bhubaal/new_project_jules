@@ -152,9 +152,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   ];
 
   return (
-    <Box sx={{ display: 'flex', width: '100%' }}> {/* Ensure root Box takes full available width, constrained by viewport */}
-      <CssBaseline /> {/* Added CssBaseline */}
-      <AppBar position="sticky" open={open} color="default" elevation={1}> {/* Changed position and color, added elevation */}
+    <Box sx={{ display: 'flex' }}>
+      <CssBaseline />
+      <AppBar position="fixed" open={open}>
         <Toolbar>
           <IconButton
             color="inherit"
@@ -162,49 +162,48 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             onClick={handleDrawerOpen}
             edge="start"
             sx={{
-              marginRight: 5, // Keep margin for consistency
+              marginRight: 5,
               ...(open && { display: 'none' }),
             }}
           >
             <MenuIcon />
           </IconButton>
+          <Avatar 
+            src="/logo192.png" 
+            alt="Logo" 
+            sx={{ width: 40, height: 40, mr: 2 }}
+          />
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            Jinzai Works
+            JINZAI
           </Typography>
-          <IconButton color="inherit">
-            <Badge badgeContent="99+" color="error">
+          <IconButton color="inherit" sx={{ ml: 1 }}>
+            <RefreshIcon />
+          </IconButton>
+          <IconButton color="inherit" sx={{ ml: 1 }}>
+            <HelpOutlineIcon />
+          </IconButton>
+          <IconButton color="inherit" sx={{ ml: 1 }}>
+            <Badge badgeContent={4} color="secondary">
               <NotificationsIcon />
             </Badge>
           </IconButton>
-          <IconButton color="inherit">
-            <RefreshIcon />
-          </IconButton>
-          <IconButton color="inherit">
-            <HelpOutlineIcon />
-          </IconButton>
-          <IconButton color="inherit">
+          <IconButton color="inherit" sx={{ ml: 1 }}>
             <AccountCircleIcon />
           </IconButton>
-          <IconButton sx={{ ml: 1 }} onClick={colorMode.toggleColorMode} color="inherit">
+          <IconButton onClick={colorMode.toggleColorMode} color="inherit" sx={{ ml: 1 }}>
             {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
           </IconButton>
         </Toolbar>
       </AppBar>
       <Drawer variant="permanent" open={open}>
-        <DrawerHeader sx={{ display: 'flex', alignItems: 'center', justifyContent: open ? 'space-between' : 'flex-end', px: open ? 2 : 1 }}>
-          {open && (
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Avatar sx={{ mr: 1, bgcolor: 'primary.main' }}>J</Avatar> {/* Placeholder Logo */}
-              <Typography variant="h6" component="div">Jinzai</Typography>
-            </Box>
-          )}
+        <DrawerHeader>
           <IconButton onClick={handleDrawerClose}>
             {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
           </IconButton>
         </DrawerHeader>
         <Divider />
         <List>
-          {menuItems.map((item) => (
+          {menuItems.map((item, index) => (
             <ListItemButton
               key={item.text}
               selected={selectedItem === item.text}
@@ -213,12 +212,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 minHeight: 48,
                 justifyContent: open ? 'initial' : 'center',
                 px: 2.5,
-                '&.Mui-selected': {
-                    backgroundColor: theme.palette.action.selected, // Use theme's selected color
-                    '&:hover': {
-                        backgroundColor: theme.palette.action.hover, // Use theme's hover color
-                    }
-                }
               }}
             >
               <ListItemIcon
