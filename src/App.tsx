@@ -4,6 +4,12 @@ import './App.css';
 import DashboardLayout from './DashboardLayout';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
+// Import the new page components
+import IVForumPage from '../pages/iv-forum';
+import WorkFromHomePage from '../pages/work-from-home';
+import LeavePage from '../pages/leave';
+import AttendancePage from '../pages/attendance';
+
 // Basic ProtectedRoute component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const isAuthenticated = localStorage.getItem('isAuthenticated');
@@ -27,6 +33,34 @@ function App() {
           <ProtectedRoute>
             <DashboardLayout>
               <JinzaiDashboard />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/iv-forum" element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <IVForumPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/work-from-home" element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <WorkFromHomePage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/leave" element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <LeavePage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/attendance" element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <AttendancePage />
             </DashboardLayout>
           </ProtectedRoute>
         } />
