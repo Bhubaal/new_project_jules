@@ -33,14 +33,26 @@ export const getDesignTokens = (mode: PaletteMode) => ({
         }
       : {
           // Palette values for dark mode
-          divider: jinzaiBrandColors.neutral[700],
+          primary: {
+            main: '#BB86FC', // Neon Orchid
+          },
+          secondary: {
+            main: '#03DAC6', // Aqua Pulse
+          },
+          error: {
+            main: '#CF6679', // Crimson Signal
+          },
+          success: {
+            main: '#4CAF50', // Verdant Success
+          },
+          divider: jinzaiBrandColors.neutral[700], // Keeping this for now, can be adjusted
           background: {
-            default: jinzaiBrandColors.neutral[900],
-            paper: jinzaiBrandColors.neutral[800],
+            default: '#1E1E1E', // Graphite Surface
+            paper: '#1E1E1E', // Graphite Surface for cards/panels
           },
           text: {
-            primary: '#fff',
-            secondary: jinzaiBrandColors.neutral[400], // Adjusted for better visibility
+            primary: '#E0E0E0', // High-Beam Text
+            secondary: '#A3A3A3', // Dim Label
           },
         }),
   },
