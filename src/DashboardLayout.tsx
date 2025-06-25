@@ -194,10 +194,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         <DrawerHeader>
           {/* Space for icon and title */}
           {open && (
-            <Box sx={{ display: 'flex', alignItems: 'center', paddingLeft: 2, paddingTop: 1, paddingBottom: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', width: '100%', paddingLeft: 1, paddingTop: 1, paddingBottom: 1 }}>
               {/* Placeholder for an icon, you can replace <img> with an Icon component */}
               <img src={logoWhite} alt="Jinzai Logo" style={{ width: 40, height: 40, marginRight: 16 }} />
-              <Typography variant="h6" noWrap component="div">
+              <Typography variant="h5" noWrap component="div" sx={{ fontWeight: 'bold' }}>
                 Jinzai
               </Typography>
             </Box>
