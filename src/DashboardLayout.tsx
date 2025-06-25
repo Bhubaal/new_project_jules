@@ -23,6 +23,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import Container from '@mui/material/Container'; // Added for content wrapping
 import Avatar from '@mui/material/Avatar'; // Added for logo
 import Badge from '@mui/material/Badge'; // Added for notification badge
+import logoWhite from './assets/logo_white.png';
 
 // MUI Icons for Sidebar and App Bar
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -195,7 +196,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           {open && (
             <Box sx={{ display: 'flex', alignItems: 'center', paddingLeft: 2, paddingTop: 1, paddingBottom: 1 }}>
               {/* Placeholder for an icon, you can replace <img> with an Icon component */}
-              <img src="/logo192.png" alt="Jinzai Logo" style={{ width: 40, height: 40, marginRight: 16 }} />
+              <img src={logoWhite} alt="Jinzai Logo" style={{ width: 40, height: 40, marginRight: 16 }} />
               <Typography variant="h6" noWrap component="div">
                 Jinzai
               </Typography>
