@@ -166,13 +166,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           >
             {open ? <ChevronLeftIcon /> : <MenuIcon />}
           </IconButton>
-          <Avatar 
-            src="/logo192.png" 
-            alt="Logo" 
-            sx={{ width: 40, height: 40, mr: 2 }}
-          />
+          {/* Avatar and JINZAI Typography removed from AppBar */}
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            JINZAI
+            {selectedItem} {/* Display the selected page name */}
           </Typography>
           <IconButton color="inherit" sx={{ ml: 1 }}>
             <RefreshIcon />
@@ -195,7 +191,16 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       </AppBar>
       <Drawer variant="permanent" open={open}>
         <DrawerHeader>
-          {/* IconButton removed as per requirement */}
+          {/* Space for icon and title */}
+          {open && (
+            <Box sx={{ display: 'flex', alignItems: 'center', paddingLeft: 2, paddingTop: 1, paddingBottom: 1 }}>
+              {/* Placeholder for an icon, you can replace <img> with an Icon component */}
+              <img src="/logo192.png" alt="Jinzai Logo" style={{ width: 40, height: 40, marginRight: 16 }} />
+              <Typography variant="h6" noWrap component="div">
+                Jinzai
+              </Typography>
+            </Box>
+          )}
         </DrawerHeader>
         <Divider />
         <List>
