@@ -22,8 +22,7 @@ const MetricCard: React.FC<MetricCardProps> = ({ title, value, icon, color, load
         display: 'flex',
         flexDirection: 'column',
         flex: 1,
-        maxWidth: 400, // Make card wider by default
-        margin: '0 auto', // Center card if possible
+        // Removed maxWidth and margin: '0 auto' to allow card to fill grid cell
         }}>
       <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         {loading ? (
