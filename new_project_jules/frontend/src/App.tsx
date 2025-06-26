@@ -59,13 +59,6 @@ function App() {
             </DashboardLayout>
           </ProtectedRoute>
         } /> */}
-        <Route path="/leaves" element={ // New route for LeavesPage
-          <ProtectedRoute>
-            <DashboardLayout>
-              <LeavesPage />
-            </DashboardLayout>
-          </ProtectedRoute>
-        } />
         <Route path="/attendance" element={
           <ProtectedRoute>
             <DashboardLayout>
