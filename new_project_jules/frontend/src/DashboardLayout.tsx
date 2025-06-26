@@ -285,10 +285,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                         selected={selectedItem === child.text}
                         onClick={() => handleListItemClick(child.text, child.path)}
                         sx={{
-                          pl: 4, // Indent child items
+                          paddingLeft: theme.spacing(4), // Explicitly set left padding for indentation
+                          paddingRight: theme.spacing(2.5), // Maintain right padding
                           minHeight: 48,
                           justifyContent: open ? 'initial' : 'center',
-                          px: 2.5,
                         }}
                       >
                         <ListItemIcon
