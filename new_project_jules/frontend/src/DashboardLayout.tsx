@@ -170,7 +170,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       text: 'Work From Home',
       icon: <HomeWorkIcon />,
       children: [
-        { text: 'Request', icon: <ListAltIcon />, path: '/work-from-home/request' },
+        { text: 'My Requests', icon: <ListAltIcon />, path: '/work-from-home/requests' }, // Updated text and path
       ]
     },
   ];

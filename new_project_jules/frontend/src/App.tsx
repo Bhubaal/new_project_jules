@@ -10,6 +10,7 @@ import WorkFromHomePage from '../pages/work-from-home';
 // import LeavePage from '../pages/leave'; // Old leave page
 import LeavesPage from '../pages/LeavesPage'; // New leaves page
 import LeaveRequestsPage from '../pages/LeaveRequestsPage'; // New Leave Requests page
+import WorkFromHomeRequestsPage from '../pages/WorkFromHomeRequestsPage'; // New WFH Requests page
 import AttendancePage from '../pages/attendance';
 
 // Basic ProtectedRoute component
@@ -70,6 +71,13 @@ function App() {
           <ProtectedRoute>
             <DashboardLayout>
               <LeaveRequestsPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/work-from-home/requests" element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <WorkFromHomeRequestsPage />
             </DashboardLayout>
           </ProtectedRoute>
         } />
