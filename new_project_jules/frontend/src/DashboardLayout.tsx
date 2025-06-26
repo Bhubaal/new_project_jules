@@ -153,7 +153,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       text: 'Leave',
       icon: <BeachAccessIcon />,
       children: [
-        { text: 'Request', icon: <ListAltIcon />, path: '/leave/request' },
+        { text: 'My Leaves', icon: <ListAltIcon />, path: '/leaves' }, // Changed from '/leave/request' to '/leaves' and text to 'My Leaves'
+        { text: 'Leave Requests', icon: <ListAltIcon />, path: '/leaves/request' }, // New Link
         { text: 'Holidays', icon: <EventIcon />, path: '/leave/holidays' },
         { text: 'Conflict Leaves', icon: <ReportProblemIcon />, path: '/leave/conflict-leaves' },
       ]
