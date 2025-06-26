@@ -4,6 +4,8 @@ import uvicorn
 
 from app.api.api_v1.routers.users import users_router
 from app.api.api_v1.routers.auth import auth_router
+from app.api.api_v1.routers.leaves import leaves_router
+from app.api.api_v1.routers.wfh import wfh_router
 from app.core import config
 from app.db.session import SessionLocal
 from app.core.auth import get_current_active_user
@@ -35,6 +37,18 @@ app.include_router(
     dependencies=[Depends(get_current_active_user)],
 )
 app.include_router(auth_router, prefix="/api", tags=["auth"])
+app.include_router(
+    leaves_router,
+    prefix="/api/v1",
+    tags=["leaves"],
+    dependencies=[Depends(get_current_active_user)],
+)
+app.include_router(
+    wfh_router,
+    prefix="/api/v1",
+    tags=["wfh"],
+    dependencies=[Depends(get_current_active_user)],
+)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", reload=True, port=8888)

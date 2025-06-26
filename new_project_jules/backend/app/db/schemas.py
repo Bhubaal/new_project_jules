@@ -14,25 +14,21 @@ class UserOut(UserBase):
     pass
 
 
+from pydantic import ConfigDict
+
 class UserCreate(UserBase):
     password: str
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserEdit(UserBase):
     password: t.Optional[str] = None
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class User(UserBase):
     id: int
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class Token(BaseModel):
@@ -43,3 +39,56 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     email: str = None
     permissions: str = "user"
+
+
+# Leave Schemas
+from datetime import date
+from .models import LeaveStatus, LeaveType, WFHStatus
+
+class LeaveBase(BaseModel):
+    from_date: date
+    to_date: date
+    leave_type: LeaveType
+    comments: t.Optional[str] = None
+    num_days: int
+    user_id: int # Changed from owner_id to user_id to match model
+
+class LeaveCreate(LeaveBase):
+    pass
+
+class LeaveEdit(BaseModel):
+    from_date: t.Optional[date] = None
+    to_date: t.Optional[date] = None
+    leave_type: t.Optional[LeaveType] = None
+    comments: t.Optional[str] = None
+    num_days: t.Optional[int] = None
+    status: t.Optional[LeaveStatus] = None
+
+class Leave(LeaveBase):
+    id: int
+    status: LeaveStatus
+    model_config = ConfigDict(from_attributes=True)
+
+# WFH Schemas
+class WFHBase(BaseModel):
+    from_date: date
+    to_date: date
+    comments: t.Optional[str] = None
+    num_days: int
+    user_id: int # Changed from owner_id to user_id to match model
+
+class WFHCreate(WFHBase):
+    pass
+
+class WFHEdit(BaseModel):
+    from_date: t.Optional[date] = None
+    to_date: t.Optional[date] = None
+    comments: t.Optional[str] = None
+    num_days: t.Optional[int] = None
+    status: t.Optional[WFHStatus] = None
+
+
+class WFH(WFHBase):
+    id: int
+    status: WFHStatus
+    model_config = ConfigDict(from_attributes=True)
