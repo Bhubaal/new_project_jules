@@ -64,69 +64,7 @@ export default function LeavesPage() {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h4" sx={{ mb: 3 }}>
-        My Leaves
-      </Typography>
-
-      {/* Leave Balance Metrics */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={4} md={4}>
-          <MetricCard
-            title="Total Allotted Leave"
-            value={`${leaveBalance.totalAllottedLeave} days`}
-            icon={<EventAvailableIcon />}
-            color="primary"
-          />
-        </Grid>
-        <Grid item xs={12} sm={4} md={4}>
-          <MetricCard
-            title="Used Leave Days"
-            value={`${leaveBalance.usedLeave} days`}
-            icon={<EventBusyIcon />}
-            color="warning"
-          />
-        </Grid>
-        <Grid item xs={12} sm={4} md={4}>
-          <MetricCard
-            title="Remaining Leave"
-            value={`${remainingLeave} days`}
-            icon={<HourglassEmptyIcon />}
-            color="success"
-          />
-        </Grid>
-      </Grid>
-
-      {/* Add Leave Request Button */}
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end' }}>
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<AddCircleOutlineIcon />}
-          onClick={handleAddLeaveRequest}
-          sx={{ textTransform: 'none', padding: '10px 20px', fontSize: '1rem' }}
-        >
-          Add Leave Request
-        </Button>
-      </Box>
-
-      {/* Leave History Table */}
-      <Typography variant="h5" sx={{ mb: 2 }}>
-        Leave History
-      </Typography>
-      <Paper sx={{ height: 400, width: '100%' }}>
-        <DataGrid
-          rows={leaveHistoryData}
-          columns={columns}
-          initialState={{
-            pagination: {
-              paginationModel: { pageSize: 5 },
-            },
-          }}
-          pageSizeOptions={[5, 10]}
-          checkboxSelection
-          disableRowSelectionOnClick
-        />
-      </Paper>
+      <Typography variant="h6">This page is no longer available.</Typography>
     </Box>
   );
 }

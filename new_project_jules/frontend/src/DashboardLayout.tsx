@@ -153,7 +153,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       text: 'Leave',
       icon: <BeachAccessIcon />,
       children: [
-        { text: 'My Leaves', icon: <ListAltIcon />, path: '/leaves' }, // Changed from '/leave/request' to '/leaves' and text to 'My Leaves'
         { text: 'Leave Requests', icon: <ListAltIcon />, path: '/leaves/request' }, // New Link
         { text: 'Holidays', icon: <EventIcon />, path: '/leave/holidays' },
         { text: 'Conflict Leaves', icon: <ReportProblemIcon />, path: '/leave/conflict-leaves' },
@@ -217,21 +216,21 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             {selectedItem} {/* Display the selected page name */}
           </Typography>
           <IconButton color="inherit" sx={{ ml: 1 }}>
-            <RefreshIcon />
+            <RefreshIcon color="inherit" />
           </IconButton>
           <IconButton color="inherit" sx={{ ml: 1 }}>
-            <HelpOutlineIcon />
+            <HelpOutlineIcon color="inherit" />
           </IconButton>
           <IconButton color="inherit" sx={{ ml: 1 }}>
             <Badge badgeContent={4} color="secondary">
-              <NotificationsIcon />
+              <NotificationsIcon color="inherit" />
             </Badge>
           </IconButton>
           <IconButton color="inherit" sx={{ ml: 1 }}>
-            <AccountCircleIcon />
+            <AccountCircleIcon color="inherit" />
           </IconButton>
           <IconButton onClick={colorMode.toggleColorMode} color="inherit" sx={{ ml: 1 }}>
-            {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+            {theme.palette.mode === 'dark' ? <Brightness7Icon color="inherit" /> : <Brightness4Icon color="inherit" />}
           </IconButton>
         </Toolbar>
       </AppBar>
