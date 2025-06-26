@@ -25,24 +25,60 @@ const Login = () => {
       formData.append('username', values.email); // Assuming email is used as username
       formData.append('password', values.password);
 
-      const response = await fetch('http://localhost:8888/api/token', { // Assuming backend runs on port 8888
+      // Step 1: Get the access token
+      const tokenResponse = await fetch('http://localhost:8888/api/token', { // Token endpoint
         method: 'POST',
         body: formData,
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem('accessToken', data.access_token);
-        navigate('/');
-      } else {
-        const errorData = await response.json();
-        setFieldError('email', errorData.detail || 'Login failed'); // Show error message
-        localStorage.removeItem('accessToken'); // Clear any old token
+      if (!tokenResponse.ok) {
+        const errorData = await tokenResponse.json();
+        setFieldError('email', errorData.detail || 'Login failed: Invalid credentials');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('is_superuser');
+        return; // Exit if token request fails
       }
+
+      const tokenData = await tokenResponse.json();
+      const accessToken = tokenData.access_token;
+      localStorage.setItem('accessToken', accessToken);
+
+      // Step 2: Fetch user details using the token
+      const userDetailsResponse = await fetch('http://localhost:8000/api/v1/users/me', { // Main API endpoint
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!userDetailsResponse.ok) {
+        const errorData = await userDetailsResponse.json();
+        console.error('Failed to fetch user details:', errorData.detail);
+        // Even if user details fail, token might be valid but further action might be needed.
+        // For now, let's treat this as a partial success but flag that user details couldn't be fetched.
+        // Or, treat as a full failure for security/consistency.
+        setFieldError('email', 'Login successful, but failed to fetch user details.');
+        // Decide if we should clear the token or allow login with partial data.
+        // For now, clearing stored items for safety if user details are crucial.
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('is_superuser');
+        return;
+      }
+
+      const userData = await userDetailsResponse.json();
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('is_superuser', String(userData.is_superuser)); // Store as string 'true' or 'false'
+
+      navigate('/'); // Navigate to home page
+
     } catch (error) {
-      console.error('Login error:', error);
-      setFieldError('email', 'An unexpected error occurred. Please try again.');
-      localStorage.removeItem('accessToken'); // Clear any old token
+      console.error('Login process error:', error);
+      setFieldError('email', 'An unexpected error occurred during login. Please try again.');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('is_superuser');
     } finally {
       setSubmitting(false);
     }
