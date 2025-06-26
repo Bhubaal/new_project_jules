@@ -16,6 +16,9 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { useNavigate } from 'react-router-dom'; // Added for navigation
+import Collapse from '@mui/material/Collapse'; // Added for nested lists
+import ExpandLess from '@mui/icons-material/ExpandLess'; // Icon for open submenu
+import ExpandMore from '@mui/icons-material/ExpandMore'; // Icon for closed submenu
 import { ColorModeContext } from './theme'; // Keep this for theme toggle
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
@@ -28,10 +31,14 @@ import logoWhite from './assets/logo_white.png';
 // MUI Icons for Sidebar and App Bar
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ForumIcon from '@mui/icons-material/Forum';
-import BeachAccessIcon from '@mui/icons-material/BeachAccess';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import HomeWorkIcon from '@mui/icons-material/HomeWork';
+import BeachAccessIcon from '@mui/icons-material/BeachAccess'; // Main Leave icon
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday'; // Main Attendance icon
+import HomeWorkIcon from '@mui/icons-material/HomeWork'; // Main Work From Home icon
 import NotificationsIcon from '@mui/icons-material/Notifications';
+// Icons for sub-items
+import ListAltIcon from '@mui/icons-material/ListAlt'; // For "Request"
+import EventIcon from '@mui/icons-material/Event'; // For "Holidays"
+import ReportProblemIcon from '@mui/icons-material/ReportProblem'; // For "Conflict Leaves"
 import RefreshIcon from '@mui/icons-material/Refresh';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -132,6 +139,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const navigate = useNavigate(); // Added for navigation
   const [open, setOpen] = useState(true); // Drawer is open by default
   const [selectedItem, setSelectedItem] = useState('Dashboard'); // State for selected item
+  const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({}); // State for submenus
 
   const handleDrawerToggle = () => {
     setOpen(!open);
@@ -141,14 +149,50 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
     { text: 'IV Forum', icon: <ForumIcon />, path: '/iv-forum' },
-    { text: 'Leave', icon: <BeachAccessIcon />, path: '/leave' },
-    { text: 'Attendance', icon: <CalendarTodayIcon />, path: '/attendance' },
-    { text: 'Work From Home', icon: <HomeWorkIcon />, path: '/work-from-home' },
+    {
+      text: 'Leave',
+      icon: <BeachAccessIcon />,
+      children: [
+        { text: 'Request', icon: <ListAltIcon />, path: '/leave/request' },
+        { text: 'Holidays', icon: <EventIcon />, path: '/leave/holidays' },
+        { text: 'Conflict Leaves', icon: <ReportProblemIcon />, path: '/leave/conflict-leaves' },
+      ]
+    },
+    {
+      text: 'Attendance',
+      icon: <CalendarTodayIcon />,
+      children: [
+        { text: 'Request', icon: <ListAltIcon />, path: '/attendance/request' },
+        // Future items can be added here
+      ]
+    },
+    {
+      text: 'Work From Home',
+      icon: <HomeWorkIcon />,
+      children: [
+        { text: 'Request', icon: <ListAltIcon />, path: '/work-from-home/request' },
+      ]
+    },
   ];
 
-  const handleListItemClick = (text: string, path: string) => {
-    setSelectedItem(text);
-    navigate(path); // Navigate to the specified path
+  const handleListItemClick = (text: string, path?: string, isParent: boolean = false) => {
+    if (path && !isParent) { // Navigable child or standalone item
+      setSelectedItem(text);
+      navigate(path);
+    } else if (isParent) { // Parent item, toggle submenu
+      setOpenSubmenus(prev => ({ ...prev, [text]: !prev[text] }));
+      // Optionally, decide if clicking a parent should change the selectedItem
+      // For now, let's not change selectedItem when only toggling a submenu
+    } else if (path && isParent) { // Parent item itself is clickable & has a path (not used in current design but for completeness)
+        setSelectedItem(text);
+        navigate(path);
+        // Also toggle submenu if it has children
+        if (menuItems.find(item => item.text === text)?.children) {
+            setOpenSubmenus(prev => ({ ...prev, [text]: !prev[text] }));
+        }
+    }
+    // If it's a parent item without a direct path, selectedItem is not changed here,
+    // allowing the current page's title to remain.
   };
 
   return (
@@ -210,27 +254,59 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         <Divider />
         <List>
           {menuItems.map((item, index) => (
-            <ListItemButton
-              key={item.text}
-              selected={selectedItem === item.text}
-              onClick={() => handleListItemClick(item.text, item.path)}
-              sx={{
-                minHeight: 48,
-                justifyContent: open ? 'initial' : 'center',
-                px: 2.5,
-              }}
-            >
-              <ListItemIcon
+            <React.Fragment key={item.text}>
+              <ListItemButton
+                selected={selectedItem === item.text && !item.children}
+                onClick={() => handleListItemClick(item.text, item.path, !!item.children)}
                 sx={{
-                  minWidth: 0,
-                  mr: open ? 3 : 'auto',
-                  justifyContent: 'center',
+                  minHeight: 48,
+                  justifyContent: open ? 'initial' : 'center',
+                  px: 2.5,
                 }}
               >
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText primary={item.text} sx={{ opacity: open ? 1 : 0 }} />
-            </ListItemButton>
+                <ListItemIcon
+                  sx={{
+                    minWidth: 0,
+                    mr: open ? 3 : 'auto',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {item.icon}
+                </ListItemIcon>
+                <ListItemText primary={item.text} sx={{ opacity: open ? 1 : 0 }} />
+                {open && item.children && (openSubmenus[item.text] ? <ExpandLess /> : <ExpandMore />)}
+              </ListItemButton>
+              {item.children && open && (
+                <Collapse in={openSubmenus[item.text]} timeout="auto" unmountOnExit>
+                  <List component="div" disablePadding>
+                    {item.children.map((child) => (
+                      <ListItemButton
+                        key={child.text}
+                        selected={selectedItem === child.text}
+                        onClick={() => handleListItemClick(child.text, child.path)}
+                        sx={{
+                          pl: 4, // Indent child items
+                          minHeight: 48,
+                          justifyContent: open ? 'initial' : 'center',
+                          px: 2.5,
+                        }}
+                      >
+                        <ListItemIcon
+                          sx={{
+                            minWidth: 0,
+                            mr: open ? 3 : 'auto',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          {child.icon}
+                        </ListItemIcon>
+                        <ListItemText primary={child.text} sx={{ opacity: open ? 1 : 0 }} />
+                      </ListItemButton>
+                    ))}
+                  </List>
+                </Collapse>
+              )}
+            </React.Fragment>
           ))}
         </List>
       </Drawer>
