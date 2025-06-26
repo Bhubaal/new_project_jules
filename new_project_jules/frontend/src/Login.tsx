@@ -6,12 +6,12 @@ import { useNavigate } from 'react-router-dom';
 
 // Define the type for form values
 interface LoginValues {
-  email: string;
+  username: string;
   password: string;
 }
 
 const LoginSchema = Yup.object().shape({
-  email: Yup.string().email('Invalid email').required('Required'),
+  username: Yup.string().required('Required'),
   password: Yup.string().required('Required'),
 });
 
@@ -22,18 +22,18 @@ const Login = () => {
     setSubmitting(true);
     try {
       const formData = new FormData();
-      formData.append('username', values.email); // Assuming email is used as username
+      formData.append('username', values.username);
       formData.append('password', values.password);
 
       // Step 1: Get the access token
-      const tokenResponse = await fetch('http://localhost:8888/api/token', { // Token endpoint
+      const tokenResponse = await fetch('http://localhost:8000/api/token', { // Token endpoint
         method: 'POST',
         body: formData,
       });
 
       if (!tokenResponse.ok) {
         const errorData = await tokenResponse.json();
-        setFieldError('email', errorData.detail || 'Login failed: Invalid credentials');
+        setFieldError('username', errorData.detail || 'Login failed: Invalid credentials');
         localStorage.removeItem('accessToken');
         localStorage.removeItem('isAuthenticated');
         localStorage.removeItem('is_superuser');
@@ -58,7 +58,7 @@ const Login = () => {
         // Even if user details fail, token might be valid but further action might be needed.
         // For now, let's treat this as a partial success but flag that user details couldn't be fetched.
         // Or, treat as a full failure for security/consistency.
-        setFieldError('email', 'Login successful, but failed to fetch user details.');
+        setFieldError('username', 'Login successful, but failed to fetch user details.');
         // Decide if we should clear the token or allow login with partial data.
         // For now, clearing stored items for safety if user details are crucial.
         localStorage.removeItem('accessToken');
@@ -75,7 +75,7 @@ const Login = () => {
 
     } catch (error) {
       console.error('Login process error:', error);
-      setFieldError('email', 'An unexpected error occurred during login. Please try again.');
+      setFieldError('username', 'An unexpected error occurred during login. Please try again.');
       localStorage.removeItem('accessToken');
       localStorage.removeItem('isAuthenticated');
       localStorage.removeItem('is_superuser');
@@ -102,7 +102,7 @@ const Login = () => {
           Sign in
         </Typography>
         <Formik
-          initialValues={{ email: '', password: '' }}
+          initialValues={{ username: '', password: '' }}
           validationSchema={LoginSchema}
           onSubmit={handleSubmit}
         >
@@ -113,12 +113,12 @@ const Login = () => {
                 margin="normal"
                 required
                 fullWidth
-                id="email"
-                label="Email Address"
-                name="email"
-                autoComplete="email"
+                id="username"
+                label="Username or Email"
+                name="username"
+                autoComplete="username"
                 autoFocus
-                helperText={<ErrorMessage name="email" />}
+                helperText={<ErrorMessage name="username" />}
               />
               <Field
                 as={TextField}
