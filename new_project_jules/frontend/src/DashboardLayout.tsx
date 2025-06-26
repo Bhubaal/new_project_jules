@@ -316,14 +316,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           flexGrow: 1,
           bgcolor: 'background.default',
           minHeight: '100vh',
-          transition: theme.transitions.create('margin', {
-            easing: theme.transitions.easing.sharp,
-            duration: open ? theme.transitions.duration.enteringScreen : theme.transitions.duration.leavingScreen,
-          }),
-          marginLeft: open ? `${drawerWidth}px` : 0,
-          [theme.breakpoints.up('sm')]: {
-            marginLeft: open ? `${drawerWidth}px` : 0,
-          },
+          // Removed transition for margin and marginLeft property
           pt: typeof theme.mixins.toolbar.minHeight === 'number'
               ? `calc(${theme.mixins.toolbar.minHeight}px + ${theme.spacing(3)})`
               : `calc(64px + ${theme.spacing(3)})`,
