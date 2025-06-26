@@ -7,46 +7,85 @@ import EventBusyIcon from '@mui/icons-material/EventBusy';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 
-// Sample Data for Detailed Leave Table (from leave.tsx)
-const leaveHistoryData: GridRowsProp = [
-  { id: 1, leaveType: 'Annual Leave', startDate: '2024-03-10', endDate: '2024-03-12', status: 'Approved', reason: 'Vacation' },
-  { id: 2, leaveType: 'Sick Leave', startDate: '2024-04-01', endDate: '2024-04-01', status: 'Approved', reason: 'Flu' },
-  { id: 3, leaveType: 'Casual Leave', startDate: '2024-05-05', endDate: '2024-05-05', status: 'Pending', reason: 'Personal Errand' },
-  { id: 4, leaveType: 'Annual Leave', startDate: '2024-06-15', endDate: '2024-06-20', status: 'Approved', reason: 'Family Trip' },
-  { id: 5, leaveType: 'Unpaid Leave', startDate: '2024-07-01', endDate: '2024-07-05', status: 'Rejected', reason: 'Extended Travel - Not enough balance' },
-];
+// TODO: Define appropriate types for API response
+interface LeaveData {
+  id: number;
+  leave_type: string;
+  start_date: string;
+  end_date: string;
+  status: string;
+  reason: string | null;
+  // Add other fields as per API response
+}
 
 const columns: GridColDef[] = [
   { field: 'id', headerName: 'ID', width: 70 },
-  { field: 'leaveType', headerName: 'Leave Type', width: 150 },
-  { field: 'startDate', headerName: 'Start Date', width: 120, type: 'date' },
-  { field: 'endDate', headerName: 'End Date', width: 120, type: 'date' },
+  { field: 'leave_type', headerName: 'Leave Type', width: 150 },
+  { field: 'start_date', headerName: 'Start Date', width: 120, type: 'date' },
+  { field: 'end_date', headerName: 'End Date', width: 120, type: 'date' },
   { field: 'status', headerName: 'Status', width: 120 },
   { field: 'reason', headerName: 'Reason', width: 250, sortable: false },
 ];
 
 interface LeaveBalanceData {
-  totalAllottedLeave: number;
+  totalAllottedLeave: number; // This might need to be fetched or calculated differently
   usedLeave: number;
 }
 
-const mockLeaveBalance: LeaveBalanceData = {
-  totalAllottedLeave: 25,
-  usedLeave: 12,
-};
-
 export default function LeavesPage() {
-  const [leaveBalance, _setLeaveBalance] = useState<LeaveBalanceData>(mockLeaveBalance);
+  const [leaveHistory, setLeaveHistory] = useState<GridRowsProp>([]);
+  const [leaveBalance, setLeaveBalance] = useState<LeaveBalanceData>({ totalAllottedLeave: 20, usedLeave: 0 }); // Initial default or fetched
   const [remainingLeave, setRemainingLeave] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setRemainingLeave(leaveBalance.totalAllottedLeave - leaveBalance.usedLeave);
-      setLoading(false);
-    }, 500); // Simulate loading
-    return () => clearTimeout(timer);
-  }, [leaveBalance]);
+    const fetchLeaveData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // TODO: Replace with actual API endpoint and authentication
+        const response = await fetch('http://localhost:8000/api/v1/leaves');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data: LeaveData[] = await response.json();
+
+        // Transform API data to GridRowsProp
+        const formattedData = data.map(item => ({
+          id: item.id,
+          leave_type: item.leave_type,
+          start_date: new Date(item.start_date), // Format date if necessary
+          end_date: new Date(item.end_date),     // Format date if necessary
+          status: item.status,
+          reason: item.reason || '-',
+        }));
+        setLeaveHistory(formattedData);
+
+        // Calculate used leave - this is a simplified example
+        // API might provide this directly or total allotted leave
+        const used = data.filter(l => l.status === 'Approved').length; // Example calculation
+        // Assuming totalAllottedLeave is fixed or fetched from another source
+        // For now, keeping a placeholder value for totalAllottedLeave
+        const currentBalance: LeaveBalanceData = { totalAllottedLeave: 25, usedLeave: used };
+        setLeaveBalance(currentBalance);
+        setRemainingLeave(currentBalance.totalAllottedLeave - currentBalance.usedLeave);
+
+      } catch (e) {
+        if (e instanceof Error) {
+          setError(e.message);
+        } else {
+          setError('An unknown error occurred');
+        }
+        // Keep dummy data or show error message
+        console.error("Failed to fetch leave data:", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLeaveData();
+  }, []);
 
   const handleAddLeaveRequest = () => {
     // Placeholder for navigation or modal popup
@@ -62,9 +101,63 @@ export default function LeavesPage() {
     );
   }
 
+  if (error) {
+    return (
+      <Box sx={{ p: 3, textAlign: 'center' }}>
+        <Typography variant="h6" color="error">Failed to load leave information.</Typography>
+        <Typography>{error}</Typography>
+        {/* Optionally, add a retry button */}
+      </Box>
+    );
+  }
+
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h6">This page is no longer available.</Typography>
+      {/* Page Title */}
+      <Typography variant="h4" gutterBottom sx={{ mb: 3 }}>
+        My Leaves
+      </Typography>
+
+      {/* Leave Balance Summary Cards */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} sm={4}>
+          <MetricCard title="Total Allotted" value={leaveBalance.totalAllottedLeave} icon={<EventAvailableIcon />} />
+        </Grid>
+        <Grid item xs={12} sm={4}>
+          <MetricCard title="Used" value={leaveBalance.usedLeave} icon={<EventBusyIcon />} />
+        </Grid>
+        <Grid item xs={12} sm={4}>
+          <MetricCard title="Remaining" value={remainingLeave} icon={<HourglassEmptyIcon />} />
+        </Grid>
+      </Grid>
+
+      {/* Action Buttons */}
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+        <Button
+          variant="contained"
+          startIcon={<AddCircleOutlineIcon />}
+          onClick={handleAddLeaveRequest}
+          sx={{backgroundColor: '#004d40', '&:hover': {backgroundColor: '#00382e'}}}
+        >
+          Request Leave
+        </Button>
+      </Box>
+
+      {/* Leave History Table */}
+      <Paper sx={{ height: 400, width: '100%' }}>
+        <DataGrid
+          rows={leaveHistory}
+          columns={columns}
+          initialState={{
+            pagination: {
+              paginationModel: { pageSize: 5 },
+            },
+          }}
+          pageSizeOptions={[5, 10, 20]}
+          checkboxSelection
+          disableRowSelectionOnClick
+        />
+      </Paper>
     </Box>
   );
 }
