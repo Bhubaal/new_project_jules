@@ -42,6 +42,7 @@ import ReportProblemIcon from '@mui/icons-material/ReportProblem'; // For "Confl
 import RefreshIcon from '@mui/icons-material/Refresh';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings'; // Icon for Admin Page
 
 const drawerWidth = 240;
 
@@ -140,13 +141,19 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [open, setOpen] = useState(true); // Drawer is open by default
   const [selectedItem, setSelectedItem] = useState('Dashboard'); // State for selected item
   const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({}); // State for submenus
+  const [isSuperuser, setIsSuperuser] = useState(false);
+
+  useEffect(() => {
+    const superuserStatus = localStorage.getItem('is_superuser') === 'true';
+    setIsSuperuser(superuserStatus);
+  }, []);
 
   const handleDrawerToggle = () => {
     setOpen(!open);
   };
 
   // Define menu items with paths
-  const menuItems = [
+  const baseMenuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
     { text: 'IV Forum', icon: <ForumIcon />, path: '/iv-forum' },
     {
@@ -175,6 +182,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     },
   ];
 
+  const adminMenuItem = {
+    text: 'Admin Management',
+    icon: <AdminPanelSettingsIcon />,
+    path: '/admin/manage-records',
+  };
+
+  const menuItems = isSuperuser ? [...baseMenuItems, adminMenuItem] : baseMenuItems;
+
   const handleListItemClick = (text: string, path?: string, isParent: boolean = false) => {
     if (path && !isParent) { // Navigable child or standalone item
       setSelectedItem(text);
@@ -187,7 +202,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         setSelectedItem(text);
         navigate(path);
         // Also toggle submenu if it has children
-        if (menuItems.find(item => item.text === text)?.children) {
+        if (baseMenuItems.find(item => item.text === text)?.children) { // Check baseMenuItems for children logic
             setOpenSubmenus(prev => ({ ...prev, [text]: !prev[text] }));
         }
     }

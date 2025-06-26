@@ -12,16 +12,29 @@ import LeavesPage from '../pages/LeavesPage'; // New leaves page
 import LeaveRequestsPage from '../pages/LeaveRequestsPage'; // New Leave Requests page
 import WorkFromHomeRequestsPage from '../pages/WorkFromHomeRequestsPage'; // New WFH Requests page
 import AttendancePage from '../pages/attendance';
+import AdminLeaveWFHManagementPage from '../pages/AdminLeaveWFHManagementPage'; // Import the new admin page
 
-// Basic ProtectedRoute component
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const isAuthenticated = localStorage.getItem('isAuthenticated');
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+  requireSuperuser?: boolean;
+}
+
+const ProtectedRoute = ({ children, requireSuperuser = false }: ProtectedRouteProps) => {
+  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+  const isSuperuser = localStorage.getItem('is_superuser') === 'true';
+
   if (!isAuthenticated) {
-    // Navigate component should be used within a Routes context or have a navigator from context
-    // For simplicity here, we'll assume this will be part of a <Routes> setup
     return <Navigate to="/login" replace />;
   }
-  return <>{children}</>; // Use fragment if children is ReactNode
+
+  if (requireSuperuser && !isSuperuser) {
+    // Optionally, redirect to a 'Not Authorized' page or back to home
+    // For now, redirecting to home, or you could show a message.
+    alert('You are not authorized to view this page.'); // Simple alert for now
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
 };
 
 function App() {
@@ -82,6 +95,13 @@ function App() {
           </ProtectedRoute>
         } />
         {/* Add other routes here */}
+        <Route path="/admin/manage-records" element={
+          <ProtectedRoute requireSuperuser={true}>
+            <DashboardLayout>
+              <AdminLeaveWFHManagementPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
       </Routes>
     </Router>
   );
