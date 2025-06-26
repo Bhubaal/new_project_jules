@@ -43,26 +43,25 @@ export const getDesignTokens = (mode: PaletteMode) => ({
       : {
           // Palette values for dark mode
           primary: {
-            main: '#BB86FC', // Primary
-            variant: '#3700B3', // Primary Variant
+            main: '#4A90E2', // Accent (e.g. for icons, highlights, and buttons)
           },
           secondary: {
-            main: '#03DAC6', // Secondary
+            main: '#4A90E2', // Using Accent for secondary as well, can be adjusted
           },
           error: {
-            main: '#CF6679', // Error
+            main: '#CF6679', // Error (keeping existing error color)
           },
           success: {
             main: '#4CAF50', // Verdant Success (keeping existing success color)
           },
-          divider: '#2C2C2C', // Divider/Border
+          divider: '#3A3A3A', // Borders & Dividers
           background: {
-            default: '#121212', // Background
-            paper: '#1E1E1E', // Surface
+            default: '#2E2E2E', // Background
+            paper: '#1F1F1F', // Cards & Panels
           },
           text: {
             primary: '#E0E0E0', // Text Primary
-            secondary: '#A3A3A3', // Text Secondary
+            secondary: '#B0B0B0', // Text Secondary
           },
         }),
   },
