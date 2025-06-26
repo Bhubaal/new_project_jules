@@ -27,6 +27,7 @@ def test_signup(client, monkeypatch):
         data={"username": "some@email.com", "password": "randompassword"},
     )
     assert response.status_code == 200
+    assert response.json() == {"message": "User created successfully"}
 
 
 def test_resignup(client, test_user, monkeypatch):
