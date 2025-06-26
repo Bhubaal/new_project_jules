@@ -1,22 +1,13 @@
 import { LockOutlined } from '@mui/icons-material';
 import { Avatar, Box, Button, Container, CssBaseline, Grid, Link, TextField, Typography } from '@mui/material';
-import { Formik, Form, Field, ErrorMessage, FormikHelpers } from 'formik';
+import { Formik, Form, Field, ErrorMessage, FormikHelpers } from 'formik'; // Import FormikHelpers
 import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode'; // Import jwt-decode
 
 // Define the type for form values
 interface LoginValues {
   username: string;
   password: string;
-}
-
-// Define the type for the decoded token
-interface DecodedToken {
-  sub: string;
-  permissions: string;
-  exp: number;
-  // Add other claims if present in your token
 }
 
 const LoginSchema = Yup.object().shape({
@@ -29,10 +20,6 @@ const Login = () => {
 
   const handleSubmit = async (values: LoginValues, { setSubmitting, setFieldError }: FormikHelpers<LoginValues>) => {
     setSubmitting(true);
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('is_superuser');
-
     try {
       const formData = new FormData();
       formData.append('username', values.username);
@@ -47,49 +34,48 @@ const Login = () => {
       if (!tokenResponse.ok) {
         const errorData = await tokenResponse.json();
         setFieldError('username', errorData.detail || 'Login failed: Invalid credentials');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('is_superuser');
         return; // Exit if token request fails
       }
 
       const tokenData = await tokenResponse.json();
       const accessToken = tokenData.access_token;
-
-      if (!accessToken) {
-        setFieldError('username', 'Login failed: No access token received.');
-        return;
-      }
       localStorage.setItem('accessToken', accessToken);
 
-      // Step 2: Decode the token to get user permissions
-      try {
-        const decodedToken = jwtDecode<DecodedToken>(accessToken);
-        const permissions = decodedToken.permissions;
-        const isSuperuser = permissions === 'admin';
+      // Step 2: Fetch user details using the token
+      const userDetailsResponse = await fetch('http://localhost:8000/api/v1/users/me', { // Main API endpoint
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      });
 
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('is_superuser', String(isSuperuser));
-
-        navigate('/'); // Navigate to home page
-      } catch (decodeError) {
-        console.error('Failed to decode token:', decodeError);
-        setFieldError('username', 'Login successful, but failed to process user information.');
-        // Clear stored items if token decoding fails, as we can't trust the session
+      if (!userDetailsResponse.ok) {
+        const errorData = await userDetailsResponse.json();
+        console.error('Failed to fetch user details:', errorData.detail);
+        // Even if user details fail, token might be valid but further action might be needed.
+        // For now, let's treat this as a partial success but flag that user details couldn't be fetched.
+        // Or, treat as a full failure for security/consistency.
+        setFieldError('username', 'Login successful, but failed to fetch user details.');
+        // Decide if we should clear the token or allow login with partial data.
+        // For now, clearing stored items for safety if user details are crucial.
         localStorage.removeItem('accessToken');
         localStorage.removeItem('isAuthenticated');
         localStorage.removeItem('is_superuser');
+        return;
       }
+
+      const userData = await userDetailsResponse.json();
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('is_superuser', String(userData.is_superuser)); // Store as string 'true' or 'false'
+
+      navigate('/'); // Navigate to home page
 
     } catch (error) {
       console.error('Login process error:', error);
-      // Check if error is an instance of Error to safely access message property
-      let errorMessage = 'An unexpected error occurred during login. Please try again.';
-      if (error instanceof Error) {
-        // Potentially more specific error handling based on error.name or error.message
-        if (error.message.includes('Failed to fetch')) {
-            errorMessage = 'Cannot connect to the server. Please check your network connection.';
-        }
-      }
-      setFieldError('username', errorMessage);
-      // Ensure localStorage is cleaned up on error regardless of where it occurs in try block
+      setFieldError('username', 'An unexpected error occurred during login. Please try again.');
       localStorage.removeItem('accessToken');
       localStorage.removeItem('isAuthenticated');
       localStorage.removeItem('is_superuser');
@@ -120,7 +106,7 @@ const Login = () => {
           validationSchema={LoginSchema}
           onSubmit={handleSubmit}
         >
-          {({ isSubmitting }) => ( // isSubmitting type is inferred by Formik
+          {({ isSubmitting }: { isSubmitting: boolean }) => ( // Explicitly type isSubmitting
             <Form>
               <Field
                 as={TextField}
@@ -133,7 +119,6 @@ const Login = () => {
                 autoComplete="username"
                 autoFocus
                 helperText={<ErrorMessage name="username" />}
-                error={!!(<ErrorMessage name="username" />)}
               />
               <Field
                 as={TextField}
@@ -146,7 +131,6 @@ const Login = () => {
                 id="password"
                 autoComplete="current-password"
                 helperText={<ErrorMessage name="password" />}
-                error={!!(<ErrorMessage name="password" />)}
               />
               <Button
                 type="submit"
@@ -157,13 +141,13 @@ const Login = () => {
               >
                 Sign In
               </Button>
-              <Grid container justifyContent="space-between">
-                <Grid item xs>
+              <Grid container justifyContent="space-between"> {/* Added justifyContent */}
+                <Grid item xs> {/* Takes available space */}
                   <Link href="#" variant="body2">
                     Forgot password?
                   </Link>
                 </Grid>
-                <Grid item>
+                <Grid item> {/* Takes content width */}
                   <Link href="#" variant="body2">
                     {"Don't have an account? Sign Up"}
                   </Link>
