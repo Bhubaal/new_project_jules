@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  Box, Typography, Grid, TextField, Select, MenuItem, IconButton, InputLabel, FormControl, Paper, Button, Switch, FormGroup, FormControlLabel
+  Box, Typography, Grid, TextField, Select, MenuItem, IconButton, InputLabel, FormControl, Paper, Button, Switch, FormGroup, FormControlLabel, CircularProgress
 } from '@mui/material';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -9,10 +9,34 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import AddIcon from '@mui/icons-material/Add';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import SyncProblemIcon from '@mui/icons-material/SyncProblem'; // Example for a tilde icon, or use Typography
+// import SyncProblemIcon from '@mui/icons-material/SyncProblem'; // Example for a tilde icon, or use Typography
 import { DataGrid, GridColDef, GridRowsProp } from '@mui/x-data-grid';
 
-// import FilterListIcon from '@mui/icons-material/FilterList'; // Example for a filter button if needed
+// Define an interface for the structure of a leave request from the API
+interface LeaveRequest {
+  id: number;
+  user_id: number; // Assuming the API returns user_id
+  user_name?: string; // Optional: if you fetch user details separately or join in backend
+  leave_type: string;
+  start_date: string;
+  end_date: string;
+  status: string;
+  reason: string | null;
+  // Add any other relevant fields from your API response
+}
+
+// Define an interface for the props of the DataGrid rows
+interface LeaveRequestRow extends GridRowsProp {
+  id: number;
+  user: string; // For display - might be user_name or a formatted string
+  leaveType: string;
+  days: number; // Calculated or from API
+  fromDate: string; // Formatted date
+  toDate: string;   // Formatted date
+  status: string;
+  comments: string | null;
+}
+
 
 const LeaveRequestsPage: React.FC = () => {
   const [leaveType, setLeaveType] = useState('');
@@ -22,36 +46,79 @@ const LeaveRequestsPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [onDuty, setOnDuty] = useState(false);
 
-  // TODO: Add handlers for filter changes
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequestRow[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  // const [requestCount, setRequestCount] = useState<number>(0); // Will be derived from leaveRequests.length
+
+  useEffect(() => {
+    const fetchLeaveRequests = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // TODO: Replace with your actual API endpoint and authentication
+        const response = await fetch('http://localhost:8000/api/v1/leaves'); // Assuming this endpoint returns all relevant leave requests
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data: LeaveRequest[] = await response.json();
+
+        // Transform API data to the format expected by DataGrid (LeaveRequestRow)
+        // This is a simplified transformation. You might need more complex logic,
+        // e.g., fetching user names if only user_id is available.
+        const formattedData: LeaveRequestRow[] = data.map(req => {
+          const startDate = new Date(req.start_date);
+          const endDate = new Date(req.end_date);
+          const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include start day
+
+          return {
+            id: req.id,
+            user: `User ${req.user_id}`, // Placeholder, replace with actual user name if available
+            leaveType: req.leave_type,
+            days: diffDays,
+            fromDate: startDate.toLocaleDateString(),
+            toDate: endDate.toLocaleDateString(),
+            status: req.status,
+            comments: req.reason || '-',
+          };
+        });
+
+        setLeaveRequests(formattedData);
+        // setRequestCount(formattedData.length);
+      } catch (e) {
+        if (e instanceof Error) {
+          setError(e.message);
+        } else {
+          setError('An unknown error occurred');
+        }
+        console.error("Failed to fetch leave requests:", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLeaveRequests();
+  }, []);
+
+
   const handleOnDutyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setOnDuty(event.target.checked);
   };
 
-  // Placeholder for request count
-  const requestCount = 10;
-
-  // Sample Data for Leave Requests Table
-  const leaveRequestsData: GridRowsProp = [
-    { id: 1, user: 'Alice Wonderland', leaveType: 'Annual Leave', days: 3, fromDate: '2024-03-10', toDate: '2024-03-12', status: 'Approved', comments: 'Vacation to Disneyland' },
-    { id: 2, user: 'Bob The Builder', leaveType: 'Sick Leave', days: 1, fromDate: '2024-04-01', toDate: '2024-04-01', status: 'Approved', comments: 'Flu symptoms' },
-    { id: 3, user: 'Charlie Brown', leaveType: 'Casual Leave', days: 1, fromDate: '2024-05-05', toDate: '2024-05-05', status: 'Pending', comments: 'Personal Errand' },
-    { id: 4, user: 'Diana Prince', leaveType: 'Annual Leave', days: 5, fromDate: '2024-06-15', toDate: '2024-06-20', status: 'Approved', comments: 'Family Trip to Themyscira' },
-    { id: 5, user: 'Edward Scissorhands', leaveType: 'Unpaid Leave', days: 10, fromDate: '2024-07-01', toDate: '2024-07-10', status: 'Rejected', comments: 'Extended personal project, insufficient balance' },
-    { id: 6, user: 'Fiona Gallagher', leaveType: 'Sick Leave', days: 2, fromDate: '2024-07-05', toDate: '2024-07-06', status: 'Pending', comments: 'Migraine' },
-  ];
-
-  const columns: GridColDef[] = [
-    { field: 'user', headerName: 'Employee', width: 180 }, // Added Employee column as it's typical for such a view
+  const columns: GridColDef<LeaveRequestRow>[] = [
+    { field: 'user', headerName: 'Employee', width: 180 },
     { field: 'leaveType', headerName: 'Leave Type', width: 150 },
     { field: 'days', headerName: 'Day(s)', type: 'number', width: 90 },
     {
       field: 'dateRange',
       headerName: 'Date',
       width: 230,
+      valueGetter: (_value, row) => `${row.fromDate} ~ ${row.toDate}`, // Use valueGetter for combined field
       renderCell: (params) => (
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           {params.row.fromDate}
-          <Typography sx={{ mx: 1 }}>~</Typography> {/* Using Typography for tilde */}
+          <Typography sx={{ mx: 1 }}>~</Typography>
           {params.row.toDate}
         </Box>
       ),
@@ -85,6 +152,23 @@ const LeaveRequestsPage: React.FC = () => {
     },
   ];
 
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+        <CircularProgress />
+        <Typography sx={{ ml: 2 }}>Loading Leave Requests...</Typography>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ p: 3, textAlign: 'center' }}>
+        <Typography variant="h6" color="error">Failed to load leave requests.</Typography>
+        <Typography>{error}</Typography>
+      </Box>
+    );
+  }
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -168,7 +252,7 @@ const LeaveRequestsPage: React.FC = () => {
               </Select>
             </FormControl>
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              {requestCount} requests
+              {leaveRequests.length} requests
             </Typography>
           </Box>
 
@@ -199,14 +283,9 @@ const LeaveRequestsPage: React.FC = () => {
           </Box>
         </Box>
 
-        {/* Data table will go here */}
-        <Typography variant="h6" sx={{ mb: 2, display: 'none' }}> {/* Hidden for now, table will have its own title or imply it */}
-          Leave Requests List
-        </Typography>
-
         <Paper sx={{ height: 600, width: '100%' }}>
           <DataGrid
-            rows={leaveRequestsData}
+            rows={leaveRequests}
             columns={columns}
             initialState={{
               pagination: {
