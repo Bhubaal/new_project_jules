@@ -18,14 +18,34 @@ const LoginSchema = Yup.object().shape({
 const Login = () => {
   const navigate = useNavigate();
 
-  const handleSubmit = (_values: LoginValues, { setSubmitting }: FormikHelpers<LoginValues>) => { // Prefixed values
-    // Simulate API call
-    setTimeout(() => {
+  const handleSubmit = async (values: LoginValues, { setSubmitting, setFieldError }: FormikHelpers<LoginValues>) => {
+    setSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append('username', values.email); // Assuming email is used as username
+      formData.append('password', values.password);
+
+      const response = await fetch('http://localhost:8888/api/token', { // Assuming backend runs on port 8888
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem('accessToken', data.access_token);
+        navigate('/');
+      } else {
+        const errorData = await response.json();
+        setFieldError('email', errorData.detail || 'Login failed'); // Show error message
+        localStorage.removeItem('accessToken'); // Clear any old token
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setFieldError('email', 'An unexpected error occurred. Please try again.');
+      localStorage.removeItem('accessToken'); // Clear any old token
+    } finally {
       setSubmitting(false);
-      // For demo purposes, assume login is successful
-      localStorage.setItem('isAuthenticated', 'true');
-      navigate('/');
-    }, 400);
+    }
   };
 
   return (

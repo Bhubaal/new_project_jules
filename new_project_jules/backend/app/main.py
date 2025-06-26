@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends
 from starlette.requests import Request
 import uvicorn
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.api_v1.routers.users import users_router
 from app.api.api_v1.routers.auth import auth_router
@@ -13,6 +14,15 @@ from app.core.auth import get_current_active_user
 
 app = FastAPI(
     title=config.PROJECT_NAME, docs_url="/api/docs", openapi_url="/api"
+)
+
+# CORS Middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
 )
 
 
