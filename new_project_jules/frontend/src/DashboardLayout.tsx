@@ -191,7 +191,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     path: '/admin/manage-records',
   };
 
-  const menuItems = isSuperuser ? [...baseMenuItems, adminMenuItem] : baseMenuItems;
+  const menuItems = isSuperuser ? [adminMenuItem] : baseMenuItems;
 
   const handleListItemClick = (text: string, path?: string, isParent: boolean = false) => {
     if (path && !isParent) { // Navigable child or standalone item
