@@ -141,15 +141,10 @@ const Login = () => {
               >
                 Sign In
               </Button>
-              <Grid container justifyContent="space-between"> {/* Added justifyContent */}
-                <Grid item xs> {/* Takes available space */}
+              <Grid container>
+                <Grid item xs>
                   <Link href="#" variant="body2">
                     Forgot password?
-                  </Link>
-                </Grid>
-                <Grid item> {/* Takes content width */}
-                  <Link href="#" variant="body2">
-                    {"Don't have an account? Sign Up"}
                   </Link>
                 </Grid>
               </Grid>
