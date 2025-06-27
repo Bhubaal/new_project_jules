@@ -56,8 +56,30 @@ const LeaveRequestsPage: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        // TODO: Replace with your actual API endpoint and authentication
-        const response = await fetch('http://localhost:8000/api/v1/leaves'); // Assuming this endpoint returns all relevant leave requests
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+          setError("Authentication token not found. Please log in again.");
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch('http://localhost:8000/api/v1/leaves', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.status === 401) {
+          setError("Unauthorized: Invalid or expired token. Please log in again.");
+          // Optionally, redirect to login or clear token
+          // localStorage.removeItem('accessToken');
+          // localStorage.removeItem('isAuthenticated');
+          // localStorage.removeItem('is_superuser');
+          // navigate('/login'); // Assuming navigate is available
+          setLoading(false);
+          return;
+        }
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
