@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, Button, Grid, Paper, CircularProgress } from '@mui/material';
 import { DataGrid, GridColDef, GridRowsProp } from '@mui/x-data-grid';
 import MetricCard from '../src/MetricCard'; // Adjusted path
+import LeaveRequestModal from '../src/LeaveRequestModal'; // Import the modal
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import EventBusyIcon from '@mui/icons-material/EventBusy';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
@@ -38,58 +39,69 @@ export default function LeavesPage() {
   const [remainingLeave, setRemainingLeave] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
+
+  const fetchLeaveData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // TODO: Replace with actual API endpoint and authentication
+      // Ensure the user_id is implicitly handled by the backend via session/token
+      const response = await fetch('http://localhost:8000/api/v1/leaves');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data: LeaveData[] = await response.json();
+
+      // Transform API data to GridRowsProp
+      const formattedData = data.map(item => ({
+        id: item.id,
+        leave_type: item.leave_type,
+        start_date: new Date(item.start_date), // Format date if necessary
+        end_date: new Date(item.end_date),     // Format date if necessary
+        status: item.status,
+        reason: item.reason || '-',
+      }));
+      setLeaveHistory(formattedData);
+
+      // Calculate used leave - this is a simplified example
+      // API might provide this directly or total allotted leave
+      // Consider fetching this from a dedicated balance endpoint if available
+      const used = data.filter(l => l.status === 'Approved').length; // Example calculation
+      // Assuming totalAllottedLeave is fixed or fetched from another source
+      // For now, keeping a placeholder value for totalAllottedLeave
+      const currentBalance: LeaveBalanceData = { totalAllottedLeave: 25, usedLeave: used };
+      setLeaveBalance(currentBalance);
+      setRemainingLeave(currentBalance.totalAllottedLeave - currentBalance.usedLeave);
+
+    } catch (e) {
+      if (e instanceof Error) {
+        setError(e.message);
+      } else {
+        setError('An unknown error occurred');
+      }
+      // Keep dummy data or show error message
+      console.error("Failed to fetch leave data:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchLeaveData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        // TODO: Replace with actual API endpoint and authentication
-        const response = await fetch('http://localhost:8000/api/v1/leaves');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data: LeaveData[] = await response.json();
-
-        // Transform API data to GridRowsProp
-        const formattedData = data.map(item => ({
-          id: item.id,
-          leave_type: item.leave_type,
-          start_date: new Date(item.start_date), // Format date if necessary
-          end_date: new Date(item.end_date),     // Format date if necessary
-          status: item.status,
-          reason: item.reason || '-',
-        }));
-        setLeaveHistory(formattedData);
-
-        // Calculate used leave - this is a simplified example
-        // API might provide this directly or total allotted leave
-        const used = data.filter(l => l.status === 'Approved').length; // Example calculation
-        // Assuming totalAllottedLeave is fixed or fetched from another source
-        // For now, keeping a placeholder value for totalAllottedLeave
-        const currentBalance: LeaveBalanceData = { totalAllottedLeave: 25, usedLeave: used };
-        setLeaveBalance(currentBalance);
-        setRemainingLeave(currentBalance.totalAllottedLeave - currentBalance.usedLeave);
-
-      } catch (e) {
-        if (e instanceof Error) {
-          setError(e.message);
-        } else {
-          setError('An unknown error occurred');
-        }
-        // Keep dummy data or show error message
-        console.error("Failed to fetch leave data:", e);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchLeaveData();
   }, []);
 
-  const handleAddLeaveRequest = () => {
-    // Placeholder for navigation or modal popup
-    alert('Navigate to Add Leave Request Page/Modal');
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleLeaveSubmitSuccess = () => {
+    fetchLeaveData(); // Re-fetch data to update the list and balances
+    // Optionally, show a success message/toast here
   };
 
   if (loading) {
@@ -136,12 +148,19 @@ export default function LeavesPage() {
         <Button
           variant="contained"
           startIcon={<AddCircleOutlineIcon />}
-          onClick={handleAddLeaveRequest}
+          onClick={handleOpenModal} // Updated onClick handler
           sx={{backgroundColor: '#004d40', '&:hover': {backgroundColor: '#00382e'}}}
         >
           Request Leave
         </Button>
       </Box>
+
+      {/* Leave Request Modal */}
+      <LeaveRequestModal
+        open={isModalOpen}
+        onClose={handleCloseModal}
+        onSubmitSuccess={handleLeaveSubmitSuccess}
+      />
 
       {/* Leave History Table */}
       <Paper sx={{ height: 400, width: '100%' }}>
