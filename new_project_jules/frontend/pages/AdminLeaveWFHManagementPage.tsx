@@ -17,6 +17,7 @@ interface User {
   email: string;
   first_name?: string;
   last_name?: string;
+  granted_additional_days?: number; // Added field
 }
 
 interface Leave {
@@ -92,6 +93,9 @@ export default function AdminLeaveWFHManagementPage() {
   const [userLeaves, setUserLeaves] = useState<GridRowsProp>([]);
   const [userWFHs, setUserWFHs] = useState<GridRowsProp>([]);
 
+  // State for the selected user object to access its properties like granted_additional_days
+  const [selectedUserDetails, setSelectedUserDetails] = useState<User | null>(null);
+
   const [loadingUsers, setLoadingUsers] = useState<boolean>(false);
   const [loadingDetails, setLoadingDetails] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -106,7 +110,34 @@ export default function AdminLeaveWFHManagementPage() {
     reason: '',
   });
 
+  // State for Adjust Additional Days Modal
+  const [adjustDaysModalOpen, setAdjustDaysModalOpen] = useState(false);
+  const [additionalDaysToGrant, setAdditionalDaysToGrant] = useState<number | string>('');
+  const [adjustDaysError, setAdjustDaysError] = useState<string | null>(null);
+  const [adjustingDays, setAdjustingDays] = useState<boolean>(false);
+
+
   const token = localStorage.getItem('accessToken');
+
+  // Function to fetch a single user's details (might be needed if /users doesn't return all fields)
+  const fetchUserDetails = async (userId: string) => {
+    if (!token) return null;
+    try {
+      const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to fetch user details: ${response.statusText}`);
+      }
+      const userData: User = await response.json();
+      setSelectedUserDetails(userData);
+      return userData;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+      return null;
+    }
+  };
+
 
   const fetchUserLeaves = async (userId: string) => {
     if (!token || !userId) return;
@@ -173,27 +204,89 @@ export default function AdminLeaveWFHManagementPage() {
     if (!selectedUserId || !token) {
       setUserLeaves([]);
       setUserWFHs([]);
+      setSelectedUserDetails(null); // Clear selected user details
       return;
     }
     setLoadingDetails(true); // Set loading before starting fetches
     setError(null); // Clear previous errors
 
-    Promise.all([
-      fetchUserLeaves(selectedUserId),
-      fetchUserWFHs(selectedUserId)
-    ]).catch(e => {
-      // This catch might be redundant if errors are handled within fetchUserLeaves/WFHs
-      // and set via setError directly.
-      setError(e instanceof Error ? e.message : String(e));
-    }).finally(() => {
-      setLoadingDetails(false); // Clear loading after all promises settle
-    });
+    // Fetch user details along with leaves and WFH
+    const userDetailsPromise = fetchUserDetails(selectedUserId);
+    const leavesPromise = fetchUserLeaves(selectedUserId);
+    const wfhPromise = fetchUserWFHs(selectedUserId);
 
-  }, [selectedUserId, token]); // Removed fetchUserLeaves, fetchUserWFHs from deps as they are stable
+    Promise.all([userDetailsPromise, leavesPromise, wfhPromise])
+      .catch(e => {
+        setError(e instanceof Error ? e.message : String(e));
+      })
+      .finally(() => {
+        setLoadingDetails(false); // Clear loading after all promises settle
+      });
+
+  }, [selectedUserId, token]);
 
   const handleUserChange = (event: SelectChangeEvent<string>) => {
-    setSelectedUserId(event.target.value);
+    const newUserId = event.target.value;
+    setSelectedUserId(newUserId);
+    if (newUserId) {
+      // Option 1: Fetch user details immediately on change
+      // fetchUserDetails(newUserId);
+      // Option 2: Or rely on the useEffect above, which is cleaner.
+      // If users array already contains full details, find and set it here.
+      const user = users.find(u => u.id.toString() === newUserId);
+      setSelectedUserDetails(user || null);
+    } else {
+      setSelectedUserDetails(null);
+    }
   };
+
+  const handleOpenAdjustDaysModal = () => {
+    if (!selectedUserDetails) return;
+    setAdditionalDaysToGrant(selectedUserDetails.granted_additional_days || 0);
+    setAdjustDaysError(null);
+    setAdjustDaysModalOpen(true);
+  };
+
+  const handleCloseAdjustDaysModal = () => {
+    setAdjustDaysModalOpen(false);
+  };
+
+  const handleAdjustDaysSubmit = async () => {
+    if (selectedUserId == null || additionalDaysToGrant === '' || isNaN(Number(additionalDaysToGrant))) {
+      setAdjustDaysError("Please enter a valid number of days.");
+      return;
+    }
+    setAdjustingDays(true);
+    setAdjustDaysError(null);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/users/${selectedUserId}/adjust_leave_days`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ granted_additional_days: Number(additionalDaysToGrant) }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || `Failed to adjust days: ${response.statusText}`);
+      }
+      const updatedUser: User = await response.json();
+      setSelectedUserDetails(updatedUser); // Update selected user details with new data
+      // Optionally, update the user in the main 'users' list as well if needed elsewhere
+      setUsers(prevUsers => prevUsers.map(u => u.id === updatedUser.id ? updatedUser : u));
+
+
+      handleCloseAdjustDaysModal();
+    } catch (e) {
+      setAdjustDaysError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setAdjustingDays(false);
+    }
+  };
+
 
   const handleOpenAddLeaveModal = () => {
     setNewLeaveData({ // Reset form
@@ -298,9 +391,29 @@ export default function AdminLeaveWFHManagementPage() {
         </Select>
       </FormControl>
 
+      {selectedUserDetails && !loadingDetails && (
+        <Box sx={{ my: 2, p:2, border: '1px dashed grey', borderRadius: '4px' }}>
+          <Typography variant="h6">
+            User: {selectedUserDetails.first_name || selectedUserDetails.last_name ? `${selectedUserDetails.first_name || ''} ${selectedUserDetails.last_name || ''}`.trim() : selectedUserDetails.email}
+          </Typography>
+          <Typography variant="body1">
+            Current Granted Additional Days: <strong>{selectedUserDetails.granted_additional_days !== undefined ? selectedUserDetails.granted_additional_days : 'N/A'}</strong>
+          </Typography>
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={handleOpenAdjustDaysModal}
+            sx={{mt: 1}}
+            disabled={adjustingDays}
+          >
+            {adjustingDays ? <CircularProgress size={20}/> : "Adjust Additional Days"}
+          </Button>
+        </Box>
+      )}
+
       {selectedUserId && (
         loadingDetails ? <CircularProgress sx={{mt: 2}} /> : (
-          <Grid container spacing={3}>
+          <Grid container spacing={3} sx={{mt: selectedUserDetails ? 0 : 2 } /* Adjust margin if details box is shown */}>
             <Grid item xs={12}>
               <Paper sx={{ p: 2 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
@@ -386,6 +499,41 @@ export default function AdminLeaveWFHManagementPage() {
           <Button onClick={handleAddLeaveSubmit} variant="contained">Submit</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Adjust Additional Days Modal */}
+      <Dialog open={adjustDaysModalOpen} onClose={handleCloseAdjustDaysModal}>
+        <DialogTitle>Adjust Additional Leave Days</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{mb: 2}}>
+            Set the total number of additional leave days for {selectedUserDetails?.email || 'this user'}.
+            This value will directly set their `granted_additional_days`.
+          </DialogContentText>
+          {adjustDaysError && <Typography color="error" sx={{ mb: 2 }}>{adjustDaysError}</Typography>}
+          <TextField
+            autoFocus
+            margin="dense"
+            id="additionalDays"
+            label="Total Additional Days"
+            type="number"
+            fullWidth
+            variant="standard"
+            value={additionalDaysToGrant}
+            onChange={(e) => setAdditionalDaysToGrant(e.target.value)}
+            InputProps={{
+                inputProps: {
+                    min: 0
+                }
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseAdjustDaysModal} disabled={adjustingDays}>Cancel</Button>
+          <Button onClick={handleAdjustDaysSubmit} variant="contained" disabled={adjustingDays}>
+            {adjustingDays ? <CircularProgress size={24} /> : "Set Days"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
     </Box>
   </LocalizationProvider>
   );

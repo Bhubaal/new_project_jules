@@ -178,11 +178,14 @@ def edit_user(
     db_user = get_user(db, user_id)
     if not db_user:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="User not found")
-    update_data = user.dict(exclude_unset=True)
+    update_data = user.model_dump(exclude_unset=True) # Use model_dump for Pydantic v2
 
-    if "password" in update_data:
-        update_data["hashed_password"] = get_password_hash(user.password)
+    if "password" in update_data and update_data["password"] is not None:
+        update_data["hashed_password"] = get_password_hash(update_data["password"])
         del update_data["password"]
+    elif "password" in update_data and update_data["password"] is None: # Explicitly ignore None password
+        del update_data["password"]
+
 
     for key, value in update_data.items():
         setattr(db_user, key, value)
