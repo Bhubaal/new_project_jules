@@ -2,18 +2,25 @@ from fastapi import FastAPI, Depends
 from starlette.requests import Request
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 
 from app.api.api_v1.routers.users import users_router
 from app.api.api_v1.routers.auth import auth_router
 from app.api.api_v1.routers.leaves import leaves_router
 from app.api.api_v1.routers.wfh import wfh_router
 from app.core import config
-from app.db.session import SessionLocal
+from app.db.session import SessionLocal, engine, Base
 from app.core.auth import get_current_active_user
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Create all tables
+    Base.metadata.create_all(bind=engine)
+    yield
+
 app = FastAPI(
-    title=config.PROJECT_NAME, docs_url="/api/docs", openapi_url="/api"
+    title=config.PROJECT_NAME, docs_url="/api/docs", openapi_url="/api", lifespan=lifespan
 )
 
 # CORS Middleware
