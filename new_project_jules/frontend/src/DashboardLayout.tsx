@@ -43,6 +43,8 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings'; // Icon for Admin Page
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 
 const drawerWidth = 240;
 
@@ -142,6 +144,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [selectedItem, setSelectedItem] = useState('Dashboard'); // State for selected item
   const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({}); // State for submenus
   const [isSuperuser, setIsSuperuser] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null); // State for logout menu
 
   useEffect(() => {
     const superuserStatus = localStorage.getItem('is_superuser') === 'true';
@@ -210,6 +213,21 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     // allowing the current page's title to remain.
   };
 
+  const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('jwt_token'); // Remove JWT token
+    localStorage.removeItem('is_superuser'); // Remove superuser status
+    navigate('/login'); // Redirect to login page
+    handleClose();
+  };
+
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
@@ -241,9 +259,30 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               <NotificationsIcon color="inherit" />
             </Badge>
           </IconButton>
-          <IconButton color="inherit" sx={{ ml: 1 }}>
+          <IconButton
+            color="inherit"
+            sx={{ ml: 1 }}
+            onClick={handleMenu}
+          >
             <AccountCircleIcon color="inherit" />
           </IconButton>
+          <Menu
+            id="menu-appbar"
+            anchorEl={anchorEl}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            keepMounted
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            open={Boolean(anchorEl)}
+            onClose={handleClose}
+          >
+            <MenuItem onClick={handleLogout}>Log Out</MenuItem>
+          </Menu>
           <IconButton onClick={colorMode.toggleColorMode} color="inherit" sx={{ ml: 1 }}>
             {theme.palette.mode === 'dark' ? <Brightness7Icon color="inherit" /> : <Brightness4Icon color="inherit" />}
           </IconButton>
@@ -253,9 +292,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         <DrawerHeader>
           {/* Space for icon and title */}
           {open && (
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', width: '100%', paddingLeft: 1, paddingTop: 1, paddingBottom: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', width: '100%', paddingLeft: 2, paddingTop: 1, paddingBottom: 1 }}> {/* Increased paddingLeft */}
               <img src={logoWhite} alt="Jinzai Logo" style={{ width: 40, height: 40, marginRight: 16 }} />
-              <Typography variant="h5" noWrap component="div" sx={{ fontWeight: 'bold' }}>
+              <Typography variant="h4" noWrap component="div" sx={{ fontWeight: 'bold' }}> {/* Increased variant to h4 */}
                 Jinzai
               </Typography>
             </Box>
