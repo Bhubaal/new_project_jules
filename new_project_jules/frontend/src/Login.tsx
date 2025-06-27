@@ -85,17 +85,29 @@ const Login = () => {
   };
 
   return (
-    <Container component="main" maxWidth="xs">
-      <CssBaseline />
-      <Box
-        sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+    <Box // Use Box for full-page background
+      sx={{
+        minHeight: '100vh', // Ensure it covers the full viewport height
+        display: 'flex',
+        alignItems: 'center', // Center content vertically
+        justifyContent: 'center', // Center content horizontally
+        bgcolor: '#E3F2FD', // Placeholder background color (muted blue)
+      }}
+    >
+      <Container component="main" maxWidth="xs">
+        <CssBaseline />
+        <Box
+          sx={{
+            padding: 4, // Add some padding
+            backgroundColor: 'white', // White background for the form card
+            borderRadius: 2, // Rounded corners for the card
+            boxShadow: 3, // Add a subtle shadow
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+        >
+          <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
           <LockOutlined />
         </Avatar>
         <Typography component="h1" variant="h5">
@@ -141,13 +153,6 @@ const Login = () => {
               >
                 Sign In
               </Button>
-              <Grid container>
-                <Grid item xs>
-                  <Link href="#" variant="body2">
-                    Forgot password?
-                  </Link>
-                </Grid>
-              </Grid>
             </Form>
           )}
         </Formik>
