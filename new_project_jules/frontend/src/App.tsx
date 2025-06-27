@@ -4,15 +4,15 @@ import './App.css';
 import DashboardLayout from './DashboardLayout';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
-// Import the new page components
+// Import page components
 import IVForumPage from '../pages/iv-forum';
 import WorkFromHomePage from '../pages/work-from-home';
-// import LeavePage from '../pages/leave'; // Old leave page
-import LeavesPage from '../pages/LeavesPage'; // New leaves page
-import LeaveRequestsPage from '../pages/LeaveRequestsPage'; // New Leave Requests page
-import WorkFromHomeRequestsPage from '../pages/WorkFromHomeRequestsPage'; // New WFH Requests page
+import LeaveRequestsPage from '../pages/LeaveRequestsPage';
+import WorkFromHomeRequestsPage from '../pages/WorkFromHomeRequestsPage';
 import AttendancePage from '../pages/attendance';
-import AdminLeaveWFHManagementPage from '../pages/AdminLeaveWFHManagementPage'; // Import the new admin page
+import AdminLeaveWFHManagementPage from '../pages/AdminLeaveWFHManagementPage';
+// Note: LeavesPage is imported but not used in any route. If it's needed, a route should be added.
+// import LeavesPage from '../pages/LeavesPage';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -28,91 +28,54 @@ const ProtectedRoute = ({ children, requireSuperuser = false }: ProtectedRoutePr
   }
 
   if (requireSuperuser && !isSuperuser) {
-    // Optionally, redirect to a 'Not Authorized' page or back to home
-    // For now, redirecting to home, or you could show a message.
-    alert('You are not authorized to view this page.'); // Simple alert for now
+    alert('You are not authorized to view this page.');
     return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;
 };
 
+// Helper component to wrap routes with DashboardLayout and ProtectedRoute
+interface AppRouteProps {
+  element: React.ReactElement;
+  requireSuperuser?: boolean;
+}
+
+const AppRoute = ({ element, requireSuperuser = false }: AppRouteProps) => (
+  <ProtectedRoute requireSuperuser={requireSuperuser}>
+    <DashboardLayout>
+      {element}
+    </DashboardLayout>
+  </ProtectedRoute>
+);
+
 function App() {
-  // For now, directly rendering Dashboard within DashboardLayout.
-  // Routing setup would typically go here if Login and other pages were actively used.
-  // Example of how routing could be structured:
   return (
     <Router>
       <Routes>
+        {/* Public route */}
         <Route path="/login" element={<Login />} />
-        <Route path="/" element={
-          <ProtectedRoute>
-            <DashboardLayout>
-              <JinzaiDashboard />
-            </DashboardLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="/iv-forum" element={
-          <ProtectedRoute>
-            <DashboardLayout>
-              <IVForumPage />
-            </DashboardLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="/work-from-home" element={
-          <ProtectedRoute>
-            <DashboardLayout>
-              <WorkFromHomePage />
-            </DashboardLayout>
-          </ProtectedRoute>
-        } />
-        {/* <Route path="/leave" element={
-          <ProtectedRoute>
-            <DashboardLayout>
-              <LeavePage />
-            </DashboardLayout>
-          </ProtectedRoute>
-        } /> */}
-        <Route path="/attendance" element={
-          <ProtectedRoute>
-            <DashboardLayout>
-              <AttendancePage />
-            </DashboardLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="/leaves/request" element={
-          <ProtectedRoute>
-            <DashboardLayout>
-              <LeaveRequestsPage />
-            </DashboardLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="/work-from-home/requests" element={
-          <ProtectedRoute>
-            <DashboardLayout>
-              <WorkFromHomeRequestsPage />
-            </DashboardLayout>
-          </ProtectedRoute>
-        } />
-        {/* Add other routes here */}
-        <Route path="/admin/manage-records" element={
-          <ProtectedRoute requireSuperuser={true}>
-            <DashboardLayout>
-              <AdminLeaveWFHManagementPage />
-            </DashboardLayout>
-          </ProtectedRoute>
-        } />
+
+        {/* Protected routes */}
+        <Route path="/" element={<AppRoute element={<JinzaiDashboard />} />} />
+        <Route path="/iv-forum" element={<AppRoute element={<IVForumPage />} />} />
+        <Route path="/work-from-home" element={<AppRoute element={<WorkFromHomePage />} />} />
+        <Route path="/attendance" element={<AppRoute element={<AttendancePage />} />} />
+        <Route path="/leaves/request" element={<AppRoute element={<LeaveRequestsPage />} />} />
+        <Route path="/work-from-home/requests" element={<AppRoute element={<WorkFromHomeRequestsPage />} />} />
+
+        {/* Superuser-only protected route */}
+        <Route
+          path="/admin/manage-records"
+          element={<AppRoute element={<AdminLeaveWFHManagementPage />} requireSuperuser={true} />}
+        />
+
+        {/* Fallback for any other route - can redirect to home or a 404 page */}
+        {/* For now, redirecting to home if authenticated, or login if not. */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
-
-  // Current simplified setup:
-  // The `title` prop for DashboardLayout is removed as the title is now set within DashboardLayout's AppBar.
-  // return (
-  //   <DashboardLayout>
-  //     <JinzaiDashboard />
-  //   </DashboardLayout>
-  // );
 }
 
 export default App;
