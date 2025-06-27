@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import {
   Box, Typography, Select, MenuItem, FormControl, InputLabel,
   CircularProgress, Grid, Paper, Button, SelectChangeEvent, Modal,
-  TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle
+  Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
+  List, ListItem, ListItemText, IconButton, Checkbox, FormControlLabel
 } from '@mui/material';
 import { DataGrid, GridColDef, GridRowsProp } from '@mui/x-data-grid';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import PersonAddIcon from '@mui/icons-material/PersonAdd'; // Icon for Add User
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever'; // Icon for Delete User
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import EditIcon from '@mui/icons-material/Edit';
@@ -115,6 +118,25 @@ export default function AdminLeaveWFHManagementPage() {
   const [additionalDaysToGrant, setAdditionalDaysToGrant] = useState<number | string>('');
   const [adjustDaysError, setAdjustDaysError] = useState<string | null>(null);
   const [adjustingDays, setAdjustingDays] = useState<boolean>(false);
+
+  // State for Create User Modal
+  const [createUserModalOpen, setCreateUserModalOpen] = useState(false);
+  const [newUserData, setNewUserData] = useState({
+    email: '',
+    password: '',
+    first_name: '',
+    last_name: '',
+    is_active: true, // Default to true
+    is_superuser: false, // Default to false
+  });
+  const [createUserError, setCreateUserError] = useState<string | null>(null);
+  const [creatingUser, setCreatingUser] = useState<boolean>(false);
+
+  // State for Delete User Confirmation Dialog
+  const [deleteUserDialogOpen, setDeleteUserDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [deleteUserError, setDeleteUserError] = useState<string | null>(null);
+  const [deletingUser, setDeletingUser] = useState<boolean>(false);
 
 
   const token = localStorage.getItem('accessToken');
@@ -356,7 +378,133 @@ export default function AdminLeaveWFHManagementPage() {
 
 
   // TODO: Implement Modals for Edit Leave and WFH
-  // TODO: Implement Delete confirmation and logic
+  // TODO: Implement Delete confirmation and logic for leaves/wfh
+
+
+  // --- User Management Modal Handlers ---
+  const handleOpenCreateUserModal = () => {
+    setNewUserData({ // Reset form
+      email: '',
+      password: '',
+      first_name: '',
+      last_name: '',
+      is_active: true,
+      is_superuser: false,
+    });
+    setCreateUserError(null);
+    setCreateUserModalOpen(true);
+  };
+
+  const handleCloseCreateUserModal = () => {
+    setCreateUserModalOpen(false);
+  };
+
+  const handleCreateUserChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = event.target;
+    setNewUserData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
+  };
+
+  const handleCreateUserSubmit = async () => {
+    if (!newUserData.email || !newUserData.password) {
+      setCreateUserError("Email and password are required.");
+      return;
+    }
+    setCreatingUser(true);
+    setCreateUserError(null);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(newUserData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || `Failed to create user: ${response.statusText}`);
+      }
+
+      const createdUser: User = await response.json();
+
+      // Refresh user list
+      setUsers(prevUsers => [...prevUsers, createdUser].sort((a, b) => a.id - b.id)); // Add and sort
+      handleCloseCreateUserModal();
+
+    } catch (e) {
+      setCreateUserError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setCreatingUser(false);
+    }
+  };
+
+  const handleOpenDeleteUserDialog = (user: User) => {
+    setUserToDelete(user);
+    setDeleteUserError(null);
+    setDeleteUserDialogOpen(true);
+  };
+
+  const handleCloseDeleteUserDialog = () => {
+    setUserToDelete(null);
+    setDeleteUserDialogOpen(false);
+  };
+
+  const handleDeleteUserConfirm = async () => {
+    if (!userToDelete) {
+      setDeleteUserError("No user selected for deletion.");
+      return;
+    }
+    setDeletingUser(true);
+    setDeleteUserError(null);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/users/${userToDelete.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        // Try to parse error detail from backend
+        let errorDetail = `Failed to delete user: ${response.statusText}`;
+        try {
+            const errorData = await response.json();
+            if (errorData.detail) {
+                errorDetail = errorData.detail;
+            }
+        } catch (e) {
+            // Ignore if response is not JSON or other parsing error
+        }
+        throw new Error(errorDetail);
+      }
+
+      // User deleted successfully
+      setUsers(prevUsers => prevUsers.filter(user => user.id !== userToDelete.id));
+
+      // If the deleted user was the selected user, clear selection and details
+      if (selectedUserId === String(userToDelete.id)) {
+        setSelectedUserId('');
+        setSelectedUserDetails(null);
+        setUserLeaves([]);
+        setUserWFHs([]);
+      }
+
+      handleCloseDeleteUserDialog();
+
+    } catch (e) {
+      setDeleteUserError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setDeletingUser(false);
+    }
+  };
+  // --- End User Management Modal Handlers ---
+
 
   if (!token) {
     return <Typography color="error">Not authenticated. Please login.</Typography>;
@@ -365,35 +513,81 @@ export default function AdminLeaveWFHManagementPage() {
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Box sx={{ p: 3 }}>
+        {/* User Management Section */}
+        <Paper sx={{ p: 2, mb: 3 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h5">User Management</Typography>
+            <Button
+              variant="contained"
+              startIcon={<PersonAddIcon />}
+              onClick={handleOpenCreateUserModal}
+              disabled={creatingUser}
+            >
+              Create User
+            </Button>
+          </Box>
+          {loadingUsers && <CircularProgress />}
+          {error && <Typography color="error">Error fetching users: {error}</Typography>}
+          {!loadingUsers && users.length === 0 && !error && <Typography>No users found.</Typography>}
+          {!loadingUsers && users.length > 0 && (
+            <List dense sx={{ maxHeight: 300, overflow: 'auto', border: '1px solid #ddd', borderRadius: 1 }}>
+              {users.map((user) => (
+                <ListItem
+                  key={user.id}
+                  secondaryAction={
+                    <IconButton edge="end" aria-label="delete" onClick={() => handleOpenDeleteUserDialog(user)} disabled={deletingUser && userToDelete?.id === user.id}>
+                      {deletingUser && userToDelete?.id === user.id ? <CircularProgress size={20} /> : <DeleteForeverIcon />}
+                    </IconButton>
+                  }
+                  sx={{
+                    backgroundColor: selectedUserId === String(user.id) ? 'action.selected' : 'transparent',
+                    '&:hover': { backgroundColor: 'action.hover' },
+                    cursor: 'pointer',
+                    pr: 8, // Ensure space for the delete icon
+                  }}
+                  onClick={() => handleUserChange({ target: { value: String(user.id) } } as SelectChangeEvent<string>)}
+                >
+                  <ListItemText
+                    primary={`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
+                    secondary={`ID: ${user.id} | Email: ${user.email}`}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          )}
+        </Paper>
+
         <Typography variant="h4" gutterBottom sx={{ mb: 3 }}>
-          Admin - Manage Employee Leaves & WFH
+          Manage Employee Leaves & WFH
         </Typography>
 
-        {loadingUsers && <CircularProgress />}
-        {error && <Typography color="error" sx={{ mb: 2 }}>Error: {error}</Typography>}
+        {/* Removed the old user selector dropdown as users are now listed above */}
+        {/* {loadingUsers && <CircularProgress />} */}
+        {/* {error && <Typography color="error" sx={{ mb: 2 }}>Error: {error}</Typography>} */}
 
-        <FormControl fullWidth sx={{ mb: 3 }}>
-        <InputLabel id="select-user-label">Select User</InputLabel>
-        <Select
-          labelId="select-user-label"
-          id="select-user"
-          value={selectedUserId}
-          label="Select User"
-          onChange={handleUserChange}
-          disabled={loadingUsers || users.length === 0}
-        >
-          <MenuItem value=""><em>None</em></MenuItem>
-          {users.map((user) => (
-            <MenuItem key={user.id} value={String(user.id)}>
-              {user.first_name || user.last_name ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : user.email} ({user.id})
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+        {/* <FormControl fullWidth sx={{ mb: 3 }}>
+          <InputLabel id="select-user-label">Select User (Leave/WFH Target)</InputLabel>
+          <Select
+            labelId="select-user-label"
+            id="select-user-leave-wfh"
+            value={selectedUserId}
+            label="Select User (Leave/WFH Target)"
+            onChange={handleUserChange}
+            disabled={loadingUsers || users.length === 0}
+          >
+            <MenuItem value=""><em>None</em></MenuItem>
+            {users.map((user) => (
+              <MenuItem key={user.id} value={String(user.id)}>
+                {user.first_name || user.last_name ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : user.email} ({user.id})
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl> */}
 
-      {selectedUserDetails && !loadingDetails && (
-        <Box sx={{ my: 2, p:2, border: '1px dashed grey', borderRadius: '4px' }}>
-          <Typography variant="h6">
+
+        {selectedUserDetails && !loadingDetails && (
+        <Box sx={{ my: 2, p:2, border: '1px dashed #ccc', borderRadius: '4px', backgroundColor: '#f9f9f9' }}>
+          <Typography variant="h6" sx={{borderBottom: '1px solid #eee', pb:1, mb:1}}>
             User: {selectedUserDetails.first_name || selectedUserDetails.last_name ? `${selectedUserDetails.first_name || ''} ${selectedUserDetails.last_name || ''}`.trim() : selectedUserDetails.email}
           </Typography>
           <Typography variant="body1">
@@ -530,6 +724,102 @@ export default function AdminLeaveWFHManagementPage() {
           <Button onClick={handleCloseAdjustDaysModal} disabled={adjustingDays}>Cancel</Button>
           <Button onClick={handleAdjustDaysSubmit} variant="contained" disabled={adjustingDays}>
             {adjustingDays ? <CircularProgress size={24} /> : "Set Days"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Create User Modal */}
+      <Dialog open={createUserModalOpen} onClose={handleCloseCreateUserModal}>
+        <DialogTitle>Create New User</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 2 }}>
+            Enter the details for the new user.
+          </DialogContentText>
+          {createUserError && <Typography color="error" sx={{ mb: 2 }}>{createUserError}</Typography>}
+          <TextField
+            autoFocus
+            margin="dense"
+            name="email"
+            label="Email Address"
+            type="email"
+            fullWidth
+            variant="outlined"
+            value={newUserData.email}
+            onChange={handleCreateUserChange}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
+            name="password"
+            label="Password"
+            type="password"
+            fullWidth
+            variant="outlined"
+            value={newUserData.password}
+            onChange={handleCreateUserChange}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
+            name="first_name"
+            label="First Name (Optional)"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={newUserData.first_name}
+            onChange={handleCreateUserChange}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
+            name="last_name"
+            label="Last Name (Optional)"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={newUserData.last_name}
+            onChange={handleCreateUserChange}
+            sx={{ mb: 2 }}
+          />
+          <FormControlLabel
+            control={<Checkbox checked={newUserData.is_active} onChange={handleCreateUserChange} name="is_active" />}
+            label="Is Active"
+            sx={{ mb: 1, display: 'block' }}
+          />
+          <FormControlLabel
+            control={<Checkbox checked={newUserData.is_superuser} onChange={handleCreateUserChange} name="is_superuser" />}
+            label="Is Superuser (Admin)"
+            sx={{ mb: 1, display: 'block' }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseCreateUserModal} disabled={creatingUser}>Cancel</Button>
+          <Button onClick={handleCreateUserSubmit} variant="contained" disabled={creatingUser}>
+            {creatingUser ? <CircularProgress size={24} /> : "Create User"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete User Confirmation Dialog */}
+      <Dialog
+        open={deleteUserDialogOpen}
+        onClose={handleCloseDeleteUserDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"Confirm User Deletion"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure you want to delete user {userToDelete?.email} (ID: {userToDelete?.id})? This action cannot be undone.
+          </DialogContentText>
+          {deleteUserError && <Typography color="error" sx={{ mt: 2 }}>{deleteUserError}</Typography>}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteUserDialog} disabled={deletingUser}>Cancel</Button>
+          <Button onClick={handleDeleteUserConfirm} color="error" variant="contained" autoFocus disabled={deletingUser}>
+            {deletingUser ? <CircularProgress size={24} /> : "Delete User"}
           </Button>
         </DialogActions>
       </Dialog>
