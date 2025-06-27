@@ -33,6 +33,7 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
+    granted_additional_days = Column(Integer, default=0, nullable=False)
 
     leaves = relationship("Leave", back_populates="owner")
     wfhs = relationship("WFH", back_populates="owner")

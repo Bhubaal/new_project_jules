@@ -105,3 +105,29 @@ async def user_delete(
     Delete existing user
     """
     return delete_user(db, user_id)
+
+from pydantic import BaseModel # Add this import
+
+# New Pydantic model for the request body of the new endpoint
+class UserLeaveAdjustment(BaseModel):
+    granted_additional_days: int
+
+@r.put("/admin/users/{user_id}/adjust_leave_days", response_model=User, response_model_exclude_none=True, tags=["admin"])
+async def adjust_user_leave_days(
+    user_id: int,
+    adjustment: UserLeaveAdjustment,
+    db=Depends(get_db),
+    current_user=Depends(get_current_active_superuser), # Ensure this is the correct dependency for admin rights
+):
+    """
+    Admin: Adjust the granted_additional_days for a specific user.
+    This sets the total granted_additional_days to the provided value.
+    """
+    # edit_user will raise an exception if user not found.
+    # We need to pass a UserEdit schema to edit_user.
+    user_edit_data = UserEdit(granted_additional_days=adjustment.granted_additional_days)
+
+    # The existing edit_user CRUD function can be used.
+    # It's already protected by get_current_active_superuser at the router level for /users/{user_id} PUT.
+    # However, this is a new specific admin route, so explicit dependency is good.
+    return edit_user(db=db, user_id=user_id, user=user_edit_data)
