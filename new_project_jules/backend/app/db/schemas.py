@@ -6,8 +6,8 @@ class UserBase(BaseModel):
     email: str
     is_active: bool = True
     is_superuser: bool = False
-    first_name: str = ""
-    last_name: str = ""
+    first_name: t.Optional[str] = None
+    last_name: t.Optional[str] = None
 
 
 class UserOut(UserBase):
