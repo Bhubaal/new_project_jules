@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box, Typography, Grid, TextField, Select, MenuItem, IconButton, InputLabel, FormControl, Paper, Button, Switch, FormGroup, FormControlLabel, CircularProgress
 } from '@mui/material';
@@ -11,6 +11,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 // import SyncProblemIcon from '@mui/icons-material/SyncProblem'; // Example for a tilde icon, or use Typography
 import { DataGrid, GridColDef, GridRowsProp } from '@mui/x-data-grid';
+import LeaveRequestModal from '../src/LeaveRequestModal'; // Import the modal
 
 // Define an interface for the structure of a leave request from the API
 interface LeaveRequest {
@@ -49,79 +50,80 @@ const LeaveRequestsPage: React.FC = () => {
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequestRow[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
   // const [requestCount, setRequestCount] = useState<number>(0); // Will be derived from leaveRequests.length
 
-  useEffect(() => {
-    const fetchLeaveRequests = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const token = localStorage.getItem('accessToken');
-        if (!token) {
-          setError("Authentication token not found. Please log in again.");
-          setLoading(false);
-          return;
-        }
-
-        const response = await fetch('http://localhost:8000/api/v1/leaves', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        if (response.status === 401) {
-          setError("Unauthorized: Invalid or expired token. Please log in again.");
-          // Optionally, redirect to login or clear token
-          // localStorage.removeItem('accessToken');
-          // localStorage.removeItem('isAuthenticated');
-          // localStorage.removeItem('is_superuser');
-          // navigate('/login'); // Assuming navigate is available
-          setLoading(false);
-          return;
-        }
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data: LeaveRequest[] = await response.json();
-
-        // Transform API data to the format expected by DataGrid (LeaveRequestRow)
-        // This is a simplified transformation. You might need more complex logic,
-        // e.g., fetching user names if only user_id is available.
-        const formattedData: LeaveRequestRow[] = data.map(req => {
-          const startDate = new Date(req.start_date);
-          const endDate = new Date(req.end_date);
-          const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include start day
-
-          return {
-            id: req.id,
-            user: `User ${req.user_id}`, // Placeholder, replace with actual user name if available
-            leaveType: req.leave_type,
-            days: diffDays,
-            fromDate: startDate.toLocaleDateString(),
-            toDate: endDate.toLocaleDateString(),
-            status: req.status,
-            comments: req.reason || '-',
-          };
-        });
-
-        setLeaveRequests(formattedData);
-        // setRequestCount(formattedData.length);
-      } catch (e) {
-        if (e instanceof Error) {
-          setError(e.message);
-        } else {
-          setError('An unknown error occurred');
-        }
-        console.error("Failed to fetch leave requests:", e);
-      } finally {
+  const fetchLeaveRequests = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        setError("Authentication token not found. Please log in again.");
         setLoading(false);
+        return;
       }
-    };
 
+      const response = await fetch('http://localhost:8000/api/v1/leaves', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 401) {
+        setError("Unauthorized: Invalid or expired token. Please log in again.");
+        // Optionally, redirect to login or clear token
+        // localStorage.removeItem('accessToken');
+        // localStorage.removeItem('isAuthenticated');
+        // localStorage.removeItem('is_superuser');
+        // navigate('/login'); // Assuming navigate is available
+        setLoading(false);
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data: LeaveRequest[] = await response.json();
+
+      // Transform API data to the format expected by DataGrid (LeaveRequestRow)
+      // This is a simplified transformation. You might need more complex logic,
+      // e.g., fetching user names if only user_id is available.
+      const formattedData: LeaveRequestRow[] = data.map(req => {
+        const startDate = new Date(req.start_date);
+        const endDate = new Date(req.end_date);
+        const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include start day
+
+        return {
+          id: req.id,
+          user: `User ${req.user_id}`, // Placeholder, replace with actual user name if available
+          leaveType: req.leave_type,
+          days: diffDays,
+          fromDate: startDate.toLocaleDateString(),
+          toDate: endDate.toLocaleDateString(),
+          status: req.status,
+          comments: req.reason || '-',
+        };
+      });
+
+      setLeaveRequests(formattedData);
+      // setRequestCount(formattedData.length);
+    } catch (e) {
+      if (e instanceof Error) {
+        setError(e.message);
+      } else {
+        setError('An unknown error occurred');
+      }
+      console.error("Failed to fetch leave requests:", e);
+    } finally {
+      setLoading(false);
+    }
+  }, []); // Empty dependency array for useCallback as it doesn't depend on external props/state that change
+
+  useEffect(() => {
     fetchLeaveRequests();
-  }, []);
+  }, [fetchLeaveRequests]);
 
 
   const handleOnDutyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -299,11 +301,21 @@ const LeaveRequestsPage: React.FC = () => {
               startIcon={<AddIcon />}
               aria-label="Create new leave request"
               size="medium"
+              onClick={() => setIsModalOpen(true)} // Open modal
             >
               New Request
             </Button>
           </Box>
         </Box>
+
+        <LeaveRequestModal
+          open={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSubmitSuccess={() => {
+            fetchLeaveRequests(); // Refresh the list
+            setIsModalOpen(false); // Close modal
+          }}
+        />
 
         <Paper sx={{ height: 600, width: '100%' }}>
           <DataGrid
